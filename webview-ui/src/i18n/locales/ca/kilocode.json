@@ -1,0 +1,102 @@
+{
+	"welcome": {
+		"greeting": "Què pot fer Kilo Code per tu?",
+		"introText": "He estat entrenat amb els models d'IA més ràpids disponibles i estic preparat per generar codi per a tu a velocitat de vertigen!",
+		"ctaButton": "Prova Kilo Code gratuïtament",
+		"manualModeButton": "Utilitza la teva pròpia clau API"
+	},
+	"lowCreditWarning": {
+		"addCredit": "Afegir crèdit",
+		"lowBalance": "El teu saldo de Kilo Code és baix"
+	},
+	"notifications": {
+		"toolRequest": "Sol·licitud d'eina pendent d'aprovació",
+		"browserAction": "Acció del navegador pendent d'aprovació",
+		"command": "Ordre pendent d'aprovació"
+	},
+	"settings": {
+		"sections": {
+			"mcp": "Servidors MCP"
+		},
+		"provider": {
+			"apiKey": "Clau API de Kilo Code",
+			"login": "Iniciar sessió a Kilo Code",
+			"logout": "Tancar sessió de Kilo Code"
+		}
+	},
+	"profile": {
+		"title": "Perfil",
+		"dashboard": "Tauler de control",
+		"logOut": "Tancar sessió",
+		"currentBalance": "SALDO ACTUAL",
+		"loading": "Carregant...",
+		"signUp": {
+			"title": "Registra't a Kilo Code",
+			"description": "Registrar-se a Kilo Code et dona crèdits gratuïts per començar. Utilitza els teus crèdits per explorar les nostres funcions, provar els models més nous i millors, i experimentar els beneficis de Kilo Code sense compromís.",
+			"termsAndPrivacy": "En continuar, acceptes les <termsLink>Condicions del Servei</termsLink> i la <privacyLink>Política de Privacitat.</privacyLink>"
+		}
+	},
+	"chat": {
+		"condense": {
+			"wantsToCondense": "Kilo Code vol condensar la teva conversa",
+			"condenseConversation": "Condensar Conversa"
+		}
+	},
+	"newTaskPreview": {
+		"task": "Tasca"
+	},
+	"docs": "Documentació",
+	"rules": {
+		"tooltip": "Gestionar Regles i Fluxos de Treball de Kilo Code",
+		"ariaLabel": "Regles de Kilo Code",
+		"tabs": {
+			"rules": "Regles",
+			"workflows": "Fluxos de Treball"
+		},
+		"description": {
+			"rules": "Les regles et permeten proporcionar a Kilo Code instruccions que ha de seguir en tots els modes i per a tots els prompts. Són una manera persistent d'incloure context i preferències per a totes les converses al teu espai de treball o globalment.",
+			"workflows": "Els fluxos de treball són una plantilla preparada per a una conversa. Els fluxos de treball et permeten definir prompts que uses freqüentment, i poden incloure una sèrie de passos per guiar Kilo Code a través de tasques repetitives, com desplegar un servei o enviar una PR. Per invocar un flux de treball, escriu",
+			"workflowsInChat": "al xat."
+		},
+		"sections": {
+			"globalRules": "Regles Globals",
+			"workspaceRules": "Regles de l'Espai de Treball",
+			"globalWorkflows": "Fluxos de Treball Globals",
+			"workspaceWorkflows": "Fluxos de Treball de l'Espai de Treball"
+		},
+		"validation": {
+			"invalidFileExtension": "Només es permeten extensions .md, .txt o sense extensió"
+		},
+		"placeholders": {
+			"workflowName": "nom-flux-treball (.md, .txt o sense extensió)",
+			"ruleName": "nom-regla (.md, .txt o sense extensió)"
+		},
+		"newFile": {
+			"newWorkflowFile": "Nou fitxer de flux de treball...",
+			"newRuleFile": "Nou fitxer de regla..."
+		}
+	},
+	"taskTimeline": {
+		"tooltip": {
+			"messageTypes": {
+				"browser_action_launch": "iniciar navegador",
+				"browser_action": "acció del navegador",
+				"browser_action_result": "resultat de l'acció del navegador",
+				"checkpoint_saved": "punt de control desat",
+				"condense_context": "condensar context",
+				"command_output": "sortida de comanda",
+				"completion_result": "resultat de la compleció",
+				"command": "execució de comandes",
+				"error": "missatge d'error",
+				"followup": "pregunta de seguiment",
+				"mcp_server_response": "Resposta del servidor MCP",
+				"text": "Resposta de la IA",
+				"reasoning": "Raonament d'IA",
+				"unknown": "tipus de missatge desconegut",
+				"tool": "ús de l'eina",
+				"use_mcp_server": "Ús del servidor MCP"
+			},
+			"clickToScroll": "Veure {{messageType}} (núm. {{messageNumber}})"
+		}
+	}
+}

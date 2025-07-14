@@ -1,0 +1,102 @@
+{
+	"welcome": {
+		"greeting": "Kilo Code आपके लिए क्या कर सकता है?",
+		"introText": "मुझे उपलब्ध सबसे तेज़ AI मॉडल्स पर प्रशिक्षित किया गया है और मैं आपके लिए अत्यंत तेज़ी से कोड जनरेट करने के लिए तैयार हूँ!",
+		"ctaButton": "Kilo Code मुफ्त में आज़माएँ",
+		"manualModeButton": "अपनी स्वयं की API कुंजी का उपयोग करें"
+	},
+	"lowCreditWarning": {
+		"addCredit": "क्रेडिट जोड़ें",
+		"lowBalance": "आपका Kilo Code बैलेंस कम है"
+	},
+	"notifications": {
+		"toolRequest": "उपकरण अनुरोध अनुमोदन की प्रतीक्षा कर रहा है",
+		"browserAction": "ब्राउज़र कार्रवाई अनुमोदन की प्रतीक्षा कर रही है",
+		"command": "कमांड अनुमोदन की प्रतीक्षा कर रहा है"
+	},
+	"settings": {
+		"sections": {
+			"mcp": "MCP सर्वर"
+		},
+		"provider": {
+			"apiKey": "Kilo Code API कुंजी",
+			"login": "Kilo Code में लॉग इन करें",
+			"logout": "Kilo Code से लॉग आउट करें"
+		}
+	},
+	"chat": {
+		"condense": {
+			"wantsToCondense": "Kilo Code तुम्हारी बातचीत को संक्षिप्त करना चाहता है",
+			"condenseConversation": "बातचीत संक्षिप्त करें"
+		}
+	},
+	"newTaskPreview": {
+		"task": "कार्य"
+	},
+	"profile": {
+		"title": "प्रोफ़ाइल",
+		"dashboard": "डैशबोर्ड",
+		"logOut": "लॉग आउट",
+		"currentBalance": "वर्तमान बैलेंस",
+		"loading": "लोड हो रहा है...",
+		"signUp": {
+			"title": "Kilo Code में साइन अप करें",
+			"description": "Kilo Code में साइन अप करने से आपको शुरुआत के लिए मुफ्त क्रेडिट मिलते हैं। अपने क्रेडिट का उपयोग करके हमारी सुविधाओं का अन्वेषण करें, नवीनतम और सर्वोत्तम मॉडल आज़माएं, और बिना किसी प्रतिबद्धता के Kilo Code के लाभों का अनुभव करें।",
+			"termsAndPrivacy": "जारी रखकर, आप <termsLink>सेवा की शर्तों</termsLink> और <privacyLink>गोपनीयता नीति</privacyLink> से सहमत होते हैं।"
+		}
+	},
+	"docs": "दस्तावेज़",
+	"rules": {
+		"tooltip": "Kilo Code नियम और वर्कफ़्लो प्रबंधित करें",
+		"ariaLabel": "Kilo Code नियम",
+		"tabs": {
+			"rules": "नियम",
+			"workflows": "वर्कफ़्लो"
+		},
+		"description": {
+			"rules": "नियम आपको Kilo Code को निर्देश प्रदान करने की अनुमति देते हैं जिनका उसे सभी मोड्स में और सभी प्रॉम्प्ट्स के लिए पालन करना चाहिए। ये आपके वर्कस्पेस में या वैश्विक रूप से सभी बातचीत के लिए संदर्भ और प्राथमिकताओं को शामिल करने का एक स्थायी तरीका हैं।",
+			"workflows": "वर्कफ़्लो एक बातचीत के लिए एक तैयार टेम्प्लेट हैं। वर्कफ़्लो आपको उन प्रॉम्प्ट्स को परिभाषित करने की अनुमति देते हैं जिनका आप अक्सर उपयोग करते हैं, और इसमें Kilo Code को दोहराए जाने वाले कार्यों के माध्यम से मार्गदर्शन करने के लिए चरणों की एक श्रृंखला शामिल हो सकती है, जैसे कि सेवा तैनात करना या PR सबमिट करना। वर्कफ़्लो को आमंत्रित करने के लिए, टाइप करें",
+			"workflowsInChat": "चैट में।"
+		},
+		"sections": {
+			"globalRules": "वैश्विक नियम",
+			"workspaceRules": "वर्कस्पेस नियम",
+			"globalWorkflows": "वैश्विक वर्कफ़्लो",
+			"workspaceWorkflows": "वर्कस्पेस वर्कफ़्लो"
+		},
+		"validation": {
+			"invalidFileExtension": "केवल .md, .txt या कोई फ़ाइल एक्सटेंशन की अनुमति है"
+		},
+		"placeholders": {
+			"workflowName": "वर्कफ़्लो-नाम (.md, .txt या कोई एक्सटेंशन नहीं)",
+			"ruleName": "नियम-नाम (.md, .txt या कोई एक्सटेंशन नहीं)"
+		},
+		"newFile": {
+			"newWorkflowFile": "नई वर्कफ़्लो फ़ाइल...",
+			"newRuleFile": "नई नियम फ़ाइल..."
+		}
+	},
+	"taskTimeline": {
+		"tooltip": {
+			"clickToScroll": "{{messageType}} (#{{messageNumber}}) देखें",
+			"messageTypes": {
+				"browser_action_launch": "ब्राउज़र लॉन्च",
+				"browser_action": "ब्राउज़र क्रिया",
+				"checkpoint_saved": "चेकपॉइंट सहेजा गया",
+				"browser_action_result": "ब्राउज़र क्रिया परिणाम",
+				"command": "कमांड एक्जीक्यूशन",
+				"command_output": "कमांड आउटपुट",
+				"completion_result": "पूर्णता परिणाम",
+				"error": "त्रुटि संदेश",
+				"mcp_server_response": "MCP सर्वर प्रतिक्रिया",
+				"condense_context": "संदर्भ संक्षिप्त करें",
+				"followup": "अनुवर्ती प्रश्न",
+				"reasoning": "AI तर्क",
+				"text": "AI प्रतिक्रिया",
+				"unknown": "अज्ञात संदेश प्रकार",
+				"tool": "उपकरण उपयोग",
+				"use_mcp_server": "MCP सर्वर उपयोग"
+			}
+		}
+	}
+}

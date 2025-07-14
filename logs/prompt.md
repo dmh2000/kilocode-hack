@@ -1,0 +1,1 @@
+@/src/hello.py modify src/hello.py to have a main function and a function named "greeting". the main function will pass a string to the greeting function and the greeting function will print the string.

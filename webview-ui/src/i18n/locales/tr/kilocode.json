@@ -1,0 +1,102 @@
+{
+	"welcome": {
+		"greeting": "Kilo Code sizin için ne yapabilir?",
+		"introText": "En hızlı mevcut yapay zeka modelleriyle eğitildim ve sizin için ışık hızında kod üretmeye hazırım!",
+		"ctaButton": "Kilo Code'u ücretsiz deneyin",
+		"manualModeButton": "Kendi API anahtarınızı kullanın"
+	},
+	"lowCreditWarning": {
+		"addCredit": "Kredi Ekle",
+		"lowBalance": "Kilo Code bakiyeniz düşük"
+	},
+	"notifications": {
+		"toolRequest": "Araç isteği onay bekliyor",
+		"browserAction": "Tarayıcı eylemi onay bekliyor",
+		"command": "Komut onay bekliyor"
+	},
+	"settings": {
+		"sections": {
+			"mcp": "MCP Sunucuları"
+		},
+		"provider": {
+			"apiKey": "Kilo Code API Anahtarı",
+			"login": "Kilo Code'a giriş yap",
+			"logout": "Kilo Code'dan çıkış yap"
+		}
+	},
+	"chat": {
+		"condense": {
+			"wantsToCondense": "Kilo Code konuşmanı özetlemek istiyor",
+			"condenseConversation": "Konuşmayı Özetle"
+		}
+	},
+	"newTaskPreview": {
+		"task": "Görev"
+	},
+	"profile": {
+		"title": "Profil",
+		"dashboard": "Kontrol Paneli",
+		"logOut": "Çıkış Yap",
+		"currentBalance": "MEVCUT BAKİYE",
+		"loading": "Yükleniyor...",
+		"signUp": {
+			"title": "Kilo Code'a Kaydol",
+			"description": "Kilo Code'a kaydolmak size başlamak için ücretsiz krediler verir. Özelliklerimizi keşfetmek, en yeni ve en iyi modelleri denemek ve herhangi bir taahhüt olmadan Kilo Code'un avantajlarını deneyimlemek için kredilerinizi kullanın.",
+			"termsAndPrivacy": "Devam ederek <termsLink>Hizmet Şartları</termsLink> ve <privacyLink>Gizlilik Politikası</privacyLink>'nı kabul etmiş olursunuz."
+		}
+	},
+	"docs": "Belgeler",
+	"rules": {
+		"tooltip": "Kilo Code Kuralları ve İş Akışlarını Yönet",
+		"ariaLabel": "Kilo Code Kuralları",
+		"tabs": {
+			"rules": "Kurallar",
+			"workflows": "İş Akışları"
+		},
+		"description": {
+			"rules": "Kurallar, Kilo Code'a tüm modlarda ve tüm promptlarda uyması gereken talimatlar sağlamanıza olanak tanır. Bunlar, çalışma alanınızda veya global olarak tüm konuşmalar için bağlam ve tercihleri dahil etmenin kalıcı bir yoludur.",
+			"workflows": "İş akışları, bir konuşma için hazırlanmış bir şablondur. İş akışları, sık kullandığınız promptları tanımlamanıza olanak tanır ve bir hizmeti dağıtmak veya PR göndermek gibi tekrarlayan görevler boyunca Kilo Code'u yönlendirmek için bir dizi adım içerebilir. Bir iş akışını çağırmak için şunu yazın",
+			"workflowsInChat": "sohbette."
+		},
+		"sections": {
+			"globalRules": "Global Kurallar",
+			"workspaceRules": "Çalışma Alanı Kuralları",
+			"globalWorkflows": "Global İş Akışları",
+			"workspaceWorkflows": "Çalışma Alanı İş Akışları"
+		},
+		"validation": {
+			"invalidFileExtension": "Yalnızca .md, .txt veya uzantısız dosyalara izin verilir"
+		},
+		"placeholders": {
+			"workflowName": "iş-akışı-adı (.md, .txt veya uzantısız)",
+			"ruleName": "kural-adı (.md, .txt veya uzantısız)"
+		},
+		"newFile": {
+			"newWorkflowFile": "Yeni iş akışı dosyası...",
+			"newRuleFile": "Yeni kural dosyası..."
+		}
+	},
+	"taskTimeline": {
+		"tooltip": {
+			"clickToScroll": "{{messageType}} (#{{messageNumber}}) Görüntüle",
+			"messageTypes": {
+				"browser_action_launch": "tarayıcı başlatma",
+				"browser_action_result": "tarayıcı işlemi sonucu",
+				"browser_action": "tarayıcı eylemi",
+				"command_output": "komut çıktısı",
+				"completion_result": "tamamlama sonucu",
+				"checkpoint_saved": "kontrol noktası kaydedildi\n(sometimes can be \"ilerleme kaydedildi\" depending on context)",
+				"condense_context": "bağlamı özetle",
+				"error": "hata mesajı",
+				"command": "komut yürütme",
+				"followup": "devam sorusu",
+				"mcp_server_response": "MCP sunucu yanıtı",
+				"text": "YZ yanıtı",
+				"reasoning": "Yapay zeka muhakemesi",
+				"tool": "araç kullanımı",
+				"unknown": "bilinmeyen mesaj türü",
+				"use_mcp_server": "MCP sunucu kullanımı"
+			}
+		}
+	}
+}

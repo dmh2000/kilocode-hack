@@ -1,0 +1,99 @@
+// See https://go.microsoft.com/fwlink/?LinkId=733558
+// for the documentation about the tasks.json format
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "watch",
+			"dependsOn": ["watch:webview", "watch:bundle", "watch:tsc"],
+			"presentation": {
+				"reveal": "never"
+			},
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"runOptions": {
+				"runOn": "folderOpen"
+			}
+		},
+		{
+			"label": "watch:webview",
+			"type": "shell",
+			"command": "pnpm --filter @roo-code/vscode-webview dev",
+			"group": "build",
+			"problemMatcher": {
+				"owner": "vite",
+				"pattern": {
+					"regexp": "^$"
+				},
+				"background": {
+					"activeOnStart": true,
+					"beginsPattern": ".*VITE.*",
+					"endsPattern": ".*Local:.*"
+				}
+			},
+			"isBackground": true,
+			"presentation": {
+				"group": "watch",
+				"reveal": "always"
+			}
+		},
+		{
+			"label": "watch:bundle",
+			"type": "shell",
+			"command": "npx turbo watch:bundle",
+			"group": "build",
+			"problemMatcher": {
+				"owner": "esbuild",
+				"pattern": {
+					"regexp": "^$"
+				},
+				"background": {
+					"activeOnStart": true,
+					"beginsPattern": "esbuild-problem-matcher#onStart",
+					"endsPattern": "esbuild-problem-matcher#onEnd"
+				}
+			},
+			"isBackground": true,
+			"presentation": {
+				"group": "watch",
+				"reveal": "always"
+			}
+		},
+		{
+			"label": "watch:tsc",
+			"type": "shell",
+			"command": "npx turbo watch:tsc",
+			"group": "build",
+			"problemMatcher": "$tsc-watch",
+			"isBackground": true,
+			"presentation": {
+				"group": "watch",
+				"reveal": "always"
+			}
+		},
+		{
+			"label": "storybook",
+			"type": "shell",
+			"command": "kill -9 $(lsof -t -i tcp:6006) 2>/dev/null || true && npx turbo storybook",
+			"group": "build",
+			"problemMatcher": {
+				"owner": "storybook",
+				"pattern": {
+					"regexp": "^$"
+				},
+				"background": {
+					"activeOnStart": true,
+					"beginsPattern": ".*Storybook.*",
+					"endsPattern": ".*Local:.*http://localhost:6006.*"
+				}
+			},
+			"isBackground": true,
+			"presentation": {
+				"reveal": "always",
+				"panel": "new"
+			}
+		}
+	]
+}

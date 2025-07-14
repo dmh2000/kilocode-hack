@@ -1,0 +1,102 @@
+{
+	"welcome": {
+		"greeting": "Was kann Kilo Code für Sie tun?",
+		"introText": "Ich wurde mit den schnellsten verfügbaren KI-Modellen trainiert und bin bereit, für Sie blitzschnell Code zu generieren!",
+		"ctaButton": "Kilo Code kostenlos ausprobieren",
+		"manualModeButton": "Eigener API-Schlüssel verwenden"
+	},
+	"lowCreditWarning": {
+		"addCredit": "Guthaben hinzufügen",
+		"lowBalance": "Ihr Kilo Code Guthaben ist niedrig"
+	},
+	"notifications": {
+		"toolRequest": "Werkzeuganfrage wartet auf Genehmigung",
+		"browserAction": "Browseraktion wartet auf Genehmigung",
+		"command": "Befehl wartet auf Genehmigung"
+	},
+	"settings": {
+		"sections": {
+			"mcp": "MCP-Server"
+		},
+		"provider": {
+			"apiKey": "Kilo Code API-Schlüssel",
+			"login": "Bei Kilo Code anmelden",
+			"logout": "Von Kilo Code abmelden"
+		}
+	},
+	"chat": {
+		"condense": {
+			"wantsToCondense": "Kilo Code möchte deine Unterhaltung zusammenfassen",
+			"condenseConversation": "Unterhaltung zusammenfassen"
+		}
+	},
+	"newTaskPreview": {
+		"task": "Aufgabe"
+	},
+	"profile": {
+		"title": "Profil",
+		"dashboard": "Dashboard",
+		"logOut": "Abmelden",
+		"currentBalance": "AKTUELLES GUTHABEN",
+		"loading": "Lädt...",
+		"signUp": {
+			"title": "Bei Kilo Code anmelden",
+			"description": "Die Anmeldung bei Kilo Code gibt Ihnen kostenlose Credits zum Einstieg. Nutzen Sie Ihre Credits, um unsere Funktionen zu erkunden, die neuesten und besten Modelle auszuprobieren und die Vorteile von Kilo Code ohne Verpflichtung zu erleben.",
+			"termsAndPrivacy": "Durch Fortfahren stimmen Sie den <termsLink>Nutzungsbedingungen</termsLink> und der <privacyLink>Datenschutzrichtlinie</privacyLink> zu."
+		}
+	},
+	"docs": "Dokumentation",
+	"rules": {
+		"tooltip": "Kilo Code Regeln & Workflows verwalten",
+		"ariaLabel": "Kilo Code Regeln",
+		"tabs": {
+			"rules": "Regeln",
+			"workflows": "Workflows"
+		},
+		"description": {
+			"rules": "Regeln ermöglichen es dir, Kilo Code Anweisungen zu geben, die es in allen Modi und für alle Prompts befolgen soll. Sie sind eine dauerhafte Möglichkeit, Kontext und Präferenzen für alle Unterhaltungen in deinem Arbeitsbereich oder global einzubeziehen.",
+			"workflows": "Workflows sind eine vorbereitete Vorlage für eine Unterhaltung. Workflows ermöglichen es dir, Prompts zu definieren, die du häufig verwendest, und können eine Reihe von Schritten enthalten, um Kilo Code durch sich wiederholende Aufgaben zu führen, wie das Bereitstellen eines Dienstes oder das Einreichen einer PR. Um einen Workflow aufzurufen, tippe",
+			"workflowsInChat": "im Chat."
+		},
+		"sections": {
+			"globalRules": "Globale Regeln",
+			"workspaceRules": "Arbeitsbereich-Regeln",
+			"globalWorkflows": "Globale Workflows",
+			"workspaceWorkflows": "Arbeitsbereich-Workflows"
+		},
+		"validation": {
+			"invalidFileExtension": "Nur .md, .txt oder keine Dateierweiterung erlaubt"
+		},
+		"placeholders": {
+			"workflowName": "workflow-name (.md, .txt oder keine Erweiterung)",
+			"ruleName": "regel-name (.md, .txt oder keine Erweiterung)"
+		},
+		"newFile": {
+			"newWorkflowFile": "Neue Workflow-Datei...",
+			"newRuleFile": "Neue Regel-Datei..."
+		}
+	},
+	"taskTimeline": {
+		"tooltip": {
+			"messageTypes": {
+				"browser_action_launch": "Browser-Start",
+				"browser_action_result": "Browser-Aktionsergebnis",
+				"browser_action": "Browser-Aktion",
+				"command": "Befehlsausführung",
+				"completion_result": "Fertigstellungsergebnis",
+				"condense_context": "Kontext verdichten",
+				"command_output": "Befehlsausgabe",
+				"error": "Fehlermeldung",
+				"reasoning": "KI-Denken",
+				"mcp_server_response": "MCP-Server-Antwort",
+				"checkpoint_saved": "Kontrollpunkt gespeichert",
+				"text": "KI-Antwort",
+				"unknown": "unbekannter Nachrichtentyp",
+				"tool": "Werkzeugnutzung",
+				"use_mcp_server": "MCP-Server-Nutzung",
+				"followup": "Nachfrage"
+			},
+			"clickToScroll": "{{messageType}} (#{{messageNumber}}) ansehen"
+		}
+	}
+}

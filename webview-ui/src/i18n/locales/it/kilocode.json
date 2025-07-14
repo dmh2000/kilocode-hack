@@ -1,0 +1,102 @@
+{
+	"welcome": {
+		"greeting": "Cosa può fare Kilo Code per te?",
+		"introText": "Sono stato addestrato sui modelli di intelligenza artificiale più veloci disponibili e sono pronto a generare codice per te alla massima velocità!",
+		"ctaButton": "Prova Kilo Code gratis",
+		"manualModeButton": "Usa la tua chiave API"
+	},
+	"lowCreditWarning": {
+		"addCredit": "Aggiungi credito",
+		"lowBalance": "Il tuo saldo Kilo Code è basso"
+	},
+	"notifications": {
+		"toolRequest": "Richiesta strumento in attesa di approvazione",
+		"browserAction": "Azione del browser in attesa di approvazione",
+		"command": "Comando in attesa di approvazione"
+	},
+	"settings": {
+		"sections": {
+			"mcp": "Server MCP"
+		},
+		"provider": {
+			"apiKey": "Chiave API Kilo Code",
+			"login": "Accedi a Kilo Code",
+			"logout": "Disconnetti da Kilo Code"
+		}
+	},
+	"chat": {
+		"condense": {
+			"wantsToCondense": "Kilo Code vuole condensare la tua conversazione",
+			"condenseConversation": "Condensa Conversazione"
+		}
+	},
+	"newTaskPreview": {
+		"task": "Attività"
+	},
+	"profile": {
+		"title": "Profilo",
+		"dashboard": "Dashboard",
+		"logOut": "Disconnetti",
+		"currentBalance": "SALDO ATTUALE",
+		"loading": "Caricamento...",
+		"signUp": {
+			"title": "Registrati a Kilo Code",
+			"description": "Registrandoti a Kilo Code ottieni crediti gratuiti per iniziare. Usa i tuoi crediti per esplorare le nostre funzionalità, provare i modelli più recenti e migliori, e sperimentare i vantaggi di Kilo Code senza impegno.",
+			"termsAndPrivacy": "Continuando, accetti i <termsLink>Termini di Servizio</termsLink> e la <privacyLink>Politica sulla Privacy.</privacyLink>"
+		}
+	},
+	"docs": "Documentazione",
+	"rules": {
+		"tooltip": "Gestisci Regole e Flussi di Lavoro di Kilo Code",
+		"ariaLabel": "Regole di Kilo Code",
+		"tabs": {
+			"rules": "Regole",
+			"workflows": "Flussi di Lavoro"
+		},
+		"description": {
+			"rules": "Le regole ti permettono di fornire a Kilo Code istruzioni che deve seguire in tutte le modalità e per tutti i prompt. Sono un modo persistente per includere contesto e preferenze per tutte le conversazioni nel tuo workspace o globalmente.",
+			"workflows": "I flussi di lavoro sono un template preparato per una conversazione. I flussi di lavoro ti permettono di definire prompt che usi frequentemente, e possono includere una serie di passaggi per guidare Kilo Code attraverso attività ripetitive, come distribuire un servizio o inviare una PR. Per invocare un flusso di lavoro, digita",
+			"workflowsInChat": "nella chat."
+		},
+		"sections": {
+			"globalRules": "Regole Globali",
+			"workspaceRules": "Regole dell'Area di Lavoro",
+			"globalWorkflows": "Flussi di Lavoro Globali",
+			"workspaceWorkflows": "Flussi di Lavoro dell'Area di Lavoro"
+		},
+		"validation": {
+			"invalidFileExtension": "Sono consentite solo estensioni .md, .txt o nessuna estensione"
+		},
+		"placeholders": {
+			"workflowName": "nome-flusso-lavoro (.md, .txt o nessuna estensione)",
+			"ruleName": "nome-regola (.md, .txt o nessuna estensione)"
+		},
+		"newFile": {
+			"newWorkflowFile": "Nuovo file flusso di lavoro...",
+			"newRuleFile": "Nuovo file regola..."
+		}
+	},
+	"taskTimeline": {
+		"tooltip": {
+			"messageTypes": {
+				"browser_action_launch": "avvio del browser",
+				"browser_action": "azione del browser",
+				"browser_action_result": "risultato dell'azione del browser",
+				"checkpoint_saved": "checkpoint salvato",
+				"command_output": "output del comando",
+				"condense_context": "contesto condensato",
+				"error": "messaggio di errore",
+				"command": "esecuzione di comandi",
+				"completion_result": "risultato di completamento",
+				"followup": "domanda di approfondimento",
+				"reasoning": "Ragionamento dell'IA",
+				"mcp_server_response": "Risposta del server MCP",
+				"text": "Risposta dell'IA",
+				"unknown": "tipo di messaggio sconosciuto",
+				"use_mcp_server": "Utilizzo del server MCP",
+				"tool": "utilizzo strumenti"
+			},
+			"clickToScroll": "Visualizza {{messageType}} (#{{messageNumber}})"
+		}
+	}
+}

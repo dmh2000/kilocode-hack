@@ -1,0 +1,102 @@
+{
+	"welcome": {
+		"greeting": "Kilo Code có thể làm gì cho bạn?",
+		"introText": "Tôi đã được đào tạo trên các mô hình AI nhanh nhất hiện có và sẵn sàng tạo mã cho bạn với tốc độ cực nhanh!",
+		"ctaButton": "Dùng thử Kilo Code miễn phí",
+		"manualModeButton": "Sử dụng khóa API của riêng bạn"
+	},
+	"lowCreditWarning": {
+		"addCredit": "Thêm tín dụng",
+		"lowBalance": "Số dư Kilo Code của bạn thấp"
+	},
+	"notifications": {
+		"toolRequest": "Yêu cầu công cụ đang chờ phê duyệt",
+		"browserAction": "Hành động trình duyệt đang chờ phê duyệt",
+		"command": "Lệnh đang chờ phê duyệt"
+	},
+	"settings": {
+		"sections": {
+			"mcp": "Máy chủ MCP"
+		},
+		"provider": {
+			"apiKey": "Khóa API Kilo Code",
+			"login": "Đăng nhập vào Kilo Code",
+			"logout": "Đăng xuất khỏi Kilo Code"
+		}
+	},
+	"chat": {
+		"condense": {
+			"wantsToCondense": "Kilo Code muốn tóm tắt cuộc trò chuyện của bạn",
+			"condenseConversation": "Tóm tắt cuộc trò chuyện"
+		}
+	},
+	"newTaskPreview": {
+		"task": "Nhiệm vụ"
+	},
+	"profile": {
+		"title": "Hồ sơ",
+		"dashboard": "Bảng điều khiển",
+		"logOut": "Đăng xuất",
+		"currentBalance": "SỐ DƯ HIỆN TẠI",
+		"loading": "Đang tải...",
+		"signUp": {
+			"title": "Đăng ký Kilo Code",
+			"description": "Đăng ký Kilo Code sẽ cung cấp cho bạn tín dụng miễn phí để bắt đầu. Sử dụng tín dụng của bạn để khám phá các tính năng, thử nghiệm các mô hình mới nhất và tốt nhất, và trải nghiệm lợi ích của Kilo Code mà không cần cam kết.",
+			"termsAndPrivacy": "Bằng cách tiếp tục, bạn đồng ý với <termsLink>Điều khoản Dịch vụ</termsLink> và <privacyLink>Chính sách Bảo mật.</privacyLink>"
+		}
+	},
+	"docs": "Tài liệu",
+	"rules": {
+		"tooltip": "Quản lý Quy tắc & Quy trình làm việc Kilo Code",
+		"ariaLabel": "Quy tắc Kilo Code",
+		"tabs": {
+			"rules": "Quy tắc",
+			"workflows": "Quy trình làm việc"
+		},
+		"description": {
+			"rules": "Quy tắc cho phép bạn cung cấp hướng dẫn cho Kilo Code mà nó phải tuân theo trong tất cả các chế độ và cho tất cả các prompt. Chúng là một cách bền vững để bao gồm ngữ cảnh và tùy chọn cho tất cả các cuộc trò chuyện trong workspace của bạn hoặc toàn cầu.",
+			"workflows": "Quy trình làm việc là một mẫu được chuẩn bị cho một cuộc trò chuyện. Quy trình làm việc cho phép bạn xác định các prompt mà bạn sử dụng thường xuyên, và có thể bao gồm một loạt các bước để hướng dẫn Kilo Code thông qua các tác vụ lặp đi lặp lại, chẳng hạn như triển khai dịch vụ hoặc gửi PR. Để gọi quy trình làm việc, hãy nhập",
+			"workflowsInChat": "trong chat."
+		},
+		"sections": {
+			"globalRules": "Quy tắc Toàn cầu",
+			"workspaceRules": "Quy tắc Workspace",
+			"globalWorkflows": "Quy trình làm việc Toàn cầu",
+			"workspaceWorkflows": "Quy trình làm việc Workspace"
+		},
+		"validation": {
+			"invalidFileExtension": "Chỉ cho phép phần mở rộng .md, .txt hoặc không có phần mở rộng"
+		},
+		"placeholders": {
+			"workflowName": "tên-quy-trình-làm-việc (.md, .txt hoặc không có phần mở rộng)",
+			"ruleName": "tên-quy-tắc (.md, .txt hoặc không có phần mở rộng)"
+		},
+		"newFile": {
+			"newWorkflowFile": "Tệp quy trình làm việc mới...",
+			"newRuleFile": "Tệp quy tắc mới..."
+		}
+	},
+	"taskTimeline": {
+		"tooltip": {
+			"messageTypes": {
+				"browser_action_launch": "khởi chạy trình duyệt",
+				"browser_action": "hành động trình duyệt",
+				"browser_action_result": "kết quả hành động trình duyệt",
+				"checkpoint_saved": "đã lưu điểm kiểm tra",
+				"command_output": "kết quả lệnh",
+				"command": "thực thi lệnh",
+				"completion_result": "kết quả hoàn thành",
+				"error": "thông báo lỗi",
+				"followup": "câu hỏi tiếp theo",
+				"condense_context": "thu gọn ngữ cảnh",
+				"mcp_server_response": "Phản hồi từ máy chủ MCP",
+				"reasoning": "Suy luận AI",
+				"unknown": "loại tin nhắn không xác định",
+				"tool": "sử dụng công cụ",
+				"text": "Phản hồi của AI",
+				"use_mcp_server": "Sử dụng máy chủ MCP"
+			},
+			"clickToScroll": "Xem {{messageType}} (#{{messageNumber}})"
+		}
+	}
+}

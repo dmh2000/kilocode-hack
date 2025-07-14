@@ -1,0 +1,102 @@
+{
+	"welcome": {
+		"greeting": "Kilo Code가 무엇을 도와드릴까요?",
+		"introText": "저는 가장 빠른 AI 모델로 학습되었으며, 번개처럼 빠르게 코드를 생성할 준비가 되어 있습니다!",
+		"ctaButton": "Kilo Code 무료로 사용해보기",
+		"manualModeButton": "내 API 키 사용하기"
+	},
+	"lowCreditWarning": {
+		"addCredit": "크레딧 추가",
+		"lowBalance": "Kilo Code 잔액이 부족합니다"
+	},
+	"notifications": {
+		"toolRequest": "도구 요청 승인 대기 중",
+		"browserAction": "브라우저 작업 승인 대기 중",
+		"command": "명령 승인 대기 중"
+	},
+	"settings": {
+		"sections": {
+			"mcp": "MCP 서버"
+		},
+		"provider": {
+			"apiKey": "Kilo Code API 키",
+			"login": "Kilo Code에 로그인",
+			"logout": "Kilo Code에서 로그아웃"
+		}
+	},
+	"chat": {
+		"condense": {
+			"wantsToCondense": "Kilo Code가 대화를 요약하고자 합니다",
+			"condenseConversation": "대화 요약하기"
+		}
+	},
+	"newTaskPreview": {
+		"task": "작업"
+	},
+	"profile": {
+		"title": "프로필",
+		"dashboard": "대시보드",
+		"logOut": "로그아웃",
+		"currentBalance": "현재 잔액",
+		"loading": "로딩 중...",
+		"signUp": {
+			"title": "Kilo Code 가입하기",
+			"description": "Kilo Code에 가입하면 시작할 수 있는 무료 크레딧을 받을 수 있습니다. 크레딧을 사용하여 기능을 탐색하고, 최신 최고의 모델을 시도하며, 약속 없이 Kilo Code의 이점을 경험해보세요.",
+			"termsAndPrivacy": "계속하면 <termsLink>서비스 약관</termsLink> 및 <privacyLink>개인정보 보호정책</privacyLink>에 동의하는 것입니다."
+		}
+	},
+	"docs": "문서",
+	"rules": {
+		"tooltip": "Kilo Code 규칙 및 워크플로우 관리",
+		"ariaLabel": "Kilo Code 규칙",
+		"tabs": {
+			"rules": "규칙",
+			"workflows": "워크플로우"
+		},
+		"description": {
+			"rules": "규칙을 사용하면 Kilo Code가 모든 모드와 모든 프롬프트에서 따라야 할 지침을 제공할 수 있습니다. 이는 워크스페이스나 전역적으로 모든 대화에 컨텍스트와 기본 설정을 포함하는 지속적인 방법입니다.",
+			"workflows": "워크플로우는 대화를 위한 준비된 템플릿입니다. 워크플로우를 사용하면 자주 사용하는 프롬프트를 정의할 수 있으며, 서비스 배포나 PR 제출과 같은 반복적인 작업을 통해 Kilo Code를 안내하는 일련의 단계를 포함할 수 있습니다. 워크플로우를 호출하려면 다음과 같이 입력하세요",
+			"workflowsInChat": "채팅에서."
+		},
+		"sections": {
+			"globalRules": "전역 규칙",
+			"workspaceRules": "워크스페이스 규칙",
+			"globalWorkflows": "전역 워크플로우",
+			"workspaceWorkflows": "워크스페이스 워크플로우"
+		},
+		"validation": {
+			"invalidFileExtension": ".md, .txt 또는 확장자 없음만 허용됩니다"
+		},
+		"placeholders": {
+			"workflowName": "워크플로우-이름 (.md, .txt 또는 확장자 없음)",
+			"ruleName": "규칙-이름 (.md, .txt 또는 확장자 없음)"
+		},
+		"newFile": {
+			"newWorkflowFile": "새 워크플로우 파일...",
+			"newRuleFile": "새 규칙 파일..."
+		}
+	},
+	"taskTimeline": {
+		"tooltip": {
+			"clickToScroll": "{{messageType}} (#{{messageNumber}}) 보기",
+			"messageTypes": {
+				"browser_action": "브라우저 작업",
+				"checkpoint_saved": "체크포인트 저장됨",
+				"browser_action_launch": "브라우저 실행",
+				"browser_action_result": "브라우저 작업 결과",
+				"command_output": "명령어 출력",
+				"command": "명령어 실행",
+				"condense_context": "컨텍스트 요약",
+				"followup": "후속 질문",
+				"error": "오류 메시지",
+				"completion_result": "완성 결과",
+				"mcp_server_response": "MCP 서버 응답",
+				"text": "AI 응답",
+				"tool": "도구 사용",
+				"unknown": "알 수 없는 메시지 유형",
+				"reasoning": "AI 추론",
+				"use_mcp_server": "MCP 서버 사용량"
+			}
+		}
+	}
+}

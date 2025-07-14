@@ -1,0 +1,35 @@
+2025/07/12 08:16:40 server.go:179: R:{"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"Kilo Code","version":"4.41.0"}},"jsonrpc":"2.0","id":0}
+2025/07/12 08:16:40 server.go:179: R:{"method":"notifications/initialized","jsonrpc":"2.0"}
+2025/07/12 08:16:40 server.go:179: R:{"method":"tools/list","jsonrpc":"2.0","id":1}
+2025/07/12 08:16:40 server.go:355: S:{"jsonrpc":"2.0","id":1,"result":{"tools":[{"description":"Pings the network address once to determine if the system is online.","inputSchema":{"properties":{"address":{"description":"The IP address or hostname to ping","type":"string"}},"required":["address"],"type":"object"},"name":"online"}]}}
+2025/07/12 08:16:41 server.go:179: R:{"method":"resources/list","jsonrpc":"2.0","id":2}
+2025/07/12 08:16:41 server.go:179: R:{"method":"resources/templates/list","jsonrpc":"2.0","id":3}
+2025/07/12 08:16:41 server.go:355: S:{"jsonrpc":"2.0","id":3,"result":{"resourceTemplates":[{"description":"Returns a string of random ASCII characters. Use URI like 'data://random_data?length=N' in resources/read, where N is the desired length.","mimeType":"text/plain","name":"random_data","uriTemplate":"data://random_data?length={length}"},{"description":"fetch an http resource","mimeType":"text/html","name":"http","uriTemplate":"{proto}://{host}/{path}"}]}}
+2025/07/12 08:17:23 server.go:179: R:{"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"Kilo Code","version":"4.41.0"}},"jsonrpc":"2.0","id":0}
+2025/07/12 08:17:23 server.go:179: R:{"method":"notifications/initialized","jsonrpc":"2.0"}
+2025/07/12 08:17:23 server.go:179: R:{"method":"tools/list","jsonrpc":"2.0","id":1}
+2025/07/12 08:17:23 server.go:355: S:{"jsonrpc":"2.0","id":1,"result":{"tools":[{"description":"Pings the network address once to determine if the system is online.","inputSchema":{"properties":{"address":{"description":"The IP address or hostname to ping","type":"string"}},"required":["address"],"type":"object"},"name":"online"}]}}
+2025/07/12 08:17:23 server.go:179: R:{"method":"resources/list","jsonrpc":"2.0","id":2}
+2025/07/12 08:17:23 server.go:179: R:{"method":"resources/templates/list","jsonrpc":"2.0","id":3}
+2025/07/12 08:17:23 server.go:355: S:{"jsonrpc":"2.0","id":3,"result":{"resourceTemplates":[{"description":"Returns a string of random ASCII characters. Use URI like 'data://random_data?length=N' in resources/read, where N is the desired length.","mimeType":"text/plain","name":"random_data","uriTemplate":"data://random_data?length={length}"},{"description":"fetch an http resource","mimeType":"text/html","name":"http","uriTemplate":"{proto}://{host}/{path}"}]}}
+2025/07/12 09:03:02 server.go:179: R:{"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"Kilo Code","version":"4.41.0"}},"jsonrpc":"2.0","id":0}
+2025/07/12 09:03:02 server.go:179: R:{"method":"notifications/initialized","jsonrpc":"2.0"}
+2025/07/12 09:03:02 server.go:179: R:{"method":"tools/list","jsonrpc":"2.0","id":1}
+2025/07/12 09:03:02 server.go:355: S:{"jsonrpc":"2.0","id":1,"result":{"tools":[{"description":"Pings the network address once to determine if the system is online.","inputSchema":{"properties":{"address":{"description":"The IP address or hostname to ping","type":"string"}},"required":["address"],"type":"object"},"name":"online"}]}}
+2025/07/12 09:03:03 server.go:179: R:{"method":"resources/list","jsonrpc":"2.0","id":2}
+2025/07/12 09:03:03 server.go:179: R:{"method":"resources/templates/list","jsonrpc":"2.0","id":3}
+2025/07/12 09:03:03 server.go:355: S:{"jsonrpc":"2.0","id":3,"result":{"resourceTemplates":[{"description":"Returns a string of random ASCII characters. Use URI like 'data://random_data?length=N' in resources/read, where N is the desired length.","mimeType":"text/plain","name":"random_data","uriTemplate":"data://random_data?length={length}"},{"description":"fetch an http resource","mimeType":"text/html","name":"http","uriTemplate":"{proto}://{host}/{path}"}]}}
+2025/07/14 12:49:14 server.go:179: R:{"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"Kilo Code","version":"4.41.0"}},"jsonrpc":"2.0","id":0}
+2025/07/14 12:49:14 server.go:179: R:{"method":"notifications/initialized","jsonrpc":"2.0"}
+2025/07/14 12:49:14 server.go:179: R:{"method":"tools/list","jsonrpc":"2.0","id":1}
+2025/07/14 12:49:14 server.go:355: S:{"jsonrpc":"2.0","id":1,"result":{"tools":[{"description":"Pings the network address once to determine if the system is online.","inputSchema":{"properties":{"address":{"description":"The IP address or hostname to ping","type":"string"}},"required":["address"],"type":"object"},"name":"online"}]}}
+2025/07/14 12:49:16 server.go:179: R:{"method":"resources/list","jsonrpc":"2.0","id":2}
+2025/07/14 12:49:16 server.go:179: R:{"method":"resources/templates/list","jsonrpc":"2.0","id":3}
+2025/07/14 12:49:16 server.go:355: S:{"jsonrpc":"2.0","id":3,"result":{"resourceTemplates":[{"description":"Returns a string of random ASCII characters. Use URI like 'data://random_data?length=N' in resources/read, where N is the desired length.","mimeType":"text/plain","name":"random_data","uriTemplate":"data://random_data?length={length}"},{"description":"fetch an http resource","mimeType":"text/html","name":"http","uriTemplate":"{proto}://{host}/{path}"}]}}
+2025/07/14 15:58:40 server.go:179: R:{"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"Kilo Code","version":"4.41.0"}},"jsonrpc":"2.0","id":0}
+2025/07/14 15:58:40 server.go:179: R:{"method":"notifications/initialized","jsonrpc":"2.0"}
+2025/07/14 15:58:40 server.go:179: R:{"method":"tools/list","jsonrpc":"2.0","id":1}
+2025/07/14 15:58:40 server.go:355: S:{"jsonrpc":"2.0","id":1,"result":{"tools":[{"description":"Pings the network address once to determine if the system is online.","inputSchema":{"properties":{"address":{"description":"The IP address or hostname to ping","type":"string"}},"required":["address"],"type":"object"},"name":"online"}]}}
+2025/07/14 15:58:41 server.go:179: R:{"method":"resources/list","jsonrpc":"2.0","id":2}
+2025/07/14 15:58:41 server.go:179: R:{"method":"resources/templates/list","jsonrpc":"2.0","id":3}
+2025/07/14 15:58:41 server.go:355: S:{"jsonrpc":"2.0","id":3,"result":{"resourceTemplates":[{"description":"Returns a string of random ASCII characters. Use URI like 'data://random_data?length=N' in resources/read, where N is the desired length.","mimeType":"text/plain","name":"random_data","uriTemplate":"data://random_data?length={length}"},{"description":"fetch an http resource","mimeType":"text/html","name":"http","uriTemplate":"{proto}://{host}/{path}"}]}}
