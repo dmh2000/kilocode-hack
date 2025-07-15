@@ -7,7 +7,7 @@
             },
             {
                 "type": "text",
-                "text": "<environment_details>\n# VSCode Visible Files\nsrc/hello.py\n\n# VSCode Open Tabs\nsrc/hello.py\n\n# Current Time\n7/12/2025, 4:26:09 PM (America/Los_Angeles, UTC-7:00)\n\n# Current Context Size (Tokens)\n(Not available)\n\n# Current Cost\n$0.00\n\n# Current Mode\n<slug>code</slug>\n<name>Code</name>\n<model>gemini-2.5-pro</model>\n\n\n# Current Workspace Directory (/home/dmh2000/Documents/Cline/MCP) Files\nsqirvy-mcp.log\nsrc/\nsrc/hello.py\n</environment_details>"
+                "text": "<environment_details>\n# VSCode Visible Files\nsrc/hello.py\n\n# VSCode Open Tabs\nsrc/hello.py\n\n# Current Time\n7/14/2025, 5:21:10 PM (America/Los_Angeles, UTC-7:00)\n\n# Current Context Size (Tokens)\n(Not available)\n\n# Current Cost\n$0.00\n\n# Current Mode\n<slug>code</slug>\n<name>Code</name>\n<model>gemini-2.5-pro</model>\n\n\n# Current Workspace Directory (/home/dmh2000/Documents/Cline/MCP) Files\nsqirvy-mcp.log\nsrc/\nsrc/hello.py\n</environment_details>"
             }
         ],
         [
@@ -17,13 +17,13 @@
             },
             {
                 "type": "text",
-                "text": "<environment_details>\n# VSCode Visible Files\nsrc/hello.py\n\n# VSCode Open Tabs\nsrc/hello.py\n\n# Current Time\n7/12/2025, 4:26:09 PM (America/Los_Angeles, UTC-7:00)\n\n# Current Context Size (Tokens)\n(Not available)\n\n# Current Cost\n$0.00\n\n# Current Mode\n<slug>code</slug>\n<name>Code</name>\n<model>gemini-2.5-pro</model>\n\n\n# Current Workspace Directory (/home/dmh2000/Documents/Cline/MCP) Files\nsqirvy-mcp.log\nsrc/\nsrc/hello.py\n</environment_details>"
+                "text": "<environment_details>\n# VSCode Visible Files\nsrc/hello.py\n\n# VSCode Open Tabs\nsrc/hello.py\n\n# Current Time\n7/14/2025, 5:21:10 PM (America/Los_Angeles, UTC-7:00)\n\n# Current Context Size (Tokens)\n(Not available)\n\n# Current Cost\n$0.00\n\n# Current Mode\n<slug>code</slug>\n<name>Code</name>\n<model>gemini-2.5-pro</model>\n\n\n# Current Workspace Directory (/home/dmh2000/Documents/Cline/MCP) Files\nsqirvy-mcp.log\nsrc/\nsrc/hello.py\n</environment_details>"
             }
         ],
         [
             {
                 "type": "text",
-                "text": "<apply_diff>\n<path>src/hello.py</path>\n<diff>\n&lt;&lt;&lt;&lt;&lt;&lt;&lt; SEARCH\n:start_line:1\n-------\nprint(\"Hello, World\")\n=======\ndef greeting(name):\n    print(f\"Hello, {name}\")\n\ndef main():\n    greeting(\"World\")\n\nif __name__ == \"__main__\":\n    main()\n&gt;&gt;&gt;&gt;&gt;&gt;&gt; REPLACE\n</diff>\n</apply_diff>"
+                "text": "<apply_diff>\n<path>src/hello.py</path>\n<diff>\n<<<<<<< SEARCH\n:start_line:1\n-------\nprint(\"Hello, World\")\n=======\ndef greeting(name):\n    print(f\"Hello, {name}\")\n\ndef main():\n    greeting(\"World\")\n\nif __name__ == \"__main__\":\n    main()\n>>>>>>> REPLACE\n</diff>\n</apply_diff>"
             }
         ],
         [
@@ -37,7 +37,7 @@
             },
             {
                 "type": "text",
-                "text": "<environment_details>\n# VSCode Visible Files\nsrc/hello.py\n\n# VSCode Open Tabs\nsrc/hello.py\n\n# Recently Modified Files\nThese files have been modified since you last accessed them (file was just edited so you may need to re-read it before editing):\nsrc/hello.py\n\n# Current Time\n7/12/2025, 4:26:20 PM (America/Los_Angeles, UTC-7:00)\n\n# Current Context Size (Tokens)\n18,745 (2%)\n\n# Current Cost\n$0.01\n\n# Current Mode\n<slug>code</slug>\n<name>Code</name>\n<model>gemini-2.5-pro</model>\n</environment_details>"
+                "text": "<environment_details>\n# VSCode Visible Files\nsrc/hello.py\n\n# VSCode Open Tabs\nsrc/hello.py\n\n# Recently Modified Files\nThese files have been modified since you last accessed them (file was just edited so you may need to re-read it before editing):\nsrc/hello.py\n\n# Current Time\n7/14/2025, 5:21:19 PM (America/Los_Angeles, UTC-7:00)\n\n# Current Context Size (Tokens)\n10,553 (1%)\n\n# Current Cost\n$0.01\n\n# Current Mode\n<slug>code</slug>\n<name>Code</name>\n<model>gemini-2.5-pro</model>\n</environment_details>"
             }
         ]
     ]
