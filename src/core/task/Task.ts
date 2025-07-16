@@ -1,14 +1,14 @@
-import * as path from "path"
-import os from "os"
-import crypto from "crypto"
-import EventEmitter from "events"
+import * as path from "path";
+import os from "os";
+import crypto from "crypto";
+import EventEmitter from "events";
 
-import * as vscode from "vscode" // kilocode_change:
+import * as vscode from "vscode"; // kilocode_change:
 
-import { Anthropic } from "@anthropic-ai/sdk"
-import delay from "delay"
-import pWaitFor from "p-wait-for"
-import { serializeError } from "serialize-error"
+import { Anthropic } from "@anthropic-ai/sdk";
+import delay from "delay";
+import pWaitFor from "p-wait-for";
+import { serializeError } from "serialize-error";
 
 import {
 	type ProviderSettings,
@@ -22,59 +22,59 @@ import {
 	type ToolProgressStatus,
 	type HistoryItem,
 	TelemetryEventName,
-} from "@roo-code/types"
-import { TelemetryService } from "@roo-code/telemetry"
-import { CloudService } from "@roo-code/cloud"
+} from "@roo-code/types";
+import { TelemetryService } from "@roo-code/telemetry";
+import { CloudService } from "@roo-code/cloud";
 
 // api
-import { ApiHandler, ApiHandlerCreateMessageMetadata, buildApiHandler } from "../../api"
-import { ApiStream } from "../../api/transform/stream"
+import { ApiHandler, ApiHandlerCreateMessageMetadata, buildApiHandler } from "../../api";
+import { ApiStream } from "../../api/transform/stream";
 
 // shared
-import { findLastIndex } from "../../shared/array"
-import { combineApiRequests } from "../../shared/combineApiRequests"
-import { combineCommandSequences } from "../../shared/combineCommandSequences"
-import { t } from "../../i18n"
-import { ClineApiReqCancelReason, ClineApiReqInfo } from "../../shared/ExtensionMessage"
-import { getApiMetrics } from "../../shared/getApiMetrics"
-import { ClineAskResponse } from "../../shared/WebviewMessage"
-import { defaultModeSlug } from "../../shared/modes"
-import { DiffStrategy } from "../../shared/tools"
-import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
+import { findLastIndex } from "../../shared/array";
+import { combineApiRequests } from "../../shared/combineApiRequests";
+import { combineCommandSequences } from "../../shared/combineCommandSequences";
+import { t } from "../../i18n";
+import { ClineApiReqCancelReason, ClineApiReqInfo } from "../../shared/ExtensionMessage";
+import { getApiMetrics } from "../../shared/getApiMetrics";
+import { ClineAskResponse } from "../../shared/WebviewMessage";
+import { defaultModeSlug } from "../../shared/modes";
+import { DiffStrategy } from "../../shared/tools";
+import { EXPERIMENT_IDS, experiments } from "../../shared/experiments";
 
 // services
-import { UrlContentFetcher } from "../../services/browser/UrlContentFetcher"
-import { BrowserSession } from "../../services/browser/BrowserSession"
-import { McpHub } from "../../services/mcp/McpHub"
-import { McpServerManager } from "../../services/mcp/McpServerManager"
-import { RepoPerTaskCheckpointService } from "../../services/checkpoints"
+import { UrlContentFetcher } from "../../services/browser/UrlContentFetcher";
+import { BrowserSession } from "../../services/browser/BrowserSession";
+import { McpHub } from "../../services/mcp/McpHub";
+import { McpServerManager } from "../../services/mcp/McpServerManager";
+import { RepoPerTaskCheckpointService } from "../../services/checkpoints";
 
 // integrations
-import { DiffViewProvider } from "../../integrations/editor/DiffViewProvider"
-import { findToolName, formatContentBlockToMarkdown } from "../../integrations/misc/export-markdown"
-import { RooTerminalProcess } from "../../integrations/terminal/types"
-import { TerminalRegistry } from "../../integrations/terminal/TerminalRegistry"
+import { DiffViewProvider } from "../../integrations/editor/DiffViewProvider";
+import { findToolName, formatContentBlockToMarkdown } from "../../integrations/misc/export-markdown";
+import { RooTerminalProcess } from "../../integrations/terminal/types";
+import { TerminalRegistry } from "../../integrations/terminal/TerminalRegistry";
 
 // utils
-import { calculateApiCostAnthropic } from "../../shared/cost"
-import { getWorkspacePath } from "../../utils/path"
+import { calculateApiCostAnthropic } from "../../shared/cost";
+import { getWorkspacePath } from "../../utils/path";
 
 // prompts
-import { formatResponse } from "../prompts/responses"
-import { SYSTEM_PROMPT } from "../prompts/system"
+import { formatResponse } from "../prompts/responses";
+import { SYSTEM_PROMPT } from "../prompts/system";
 
 // core modules
-import { ToolRepetitionDetector } from "../tools/ToolRepetitionDetector"
-import { FileContextTracker } from "../context-tracking/FileContextTracker"
-import { RooIgnoreController } from "../ignore/RooIgnoreController"
-import { RooProtectedController } from "../protect/RooProtectedController"
-import { type AssistantMessageContent, parseAssistantMessage, presentAssistantMessage } from "../assistant-message"
-import { truncateConversationIfNeeded } from "../sliding-window"
-import { ClineProvider } from "../webview/ClineProvider"
-import { MultiSearchReplaceDiffStrategy } from "../diff/strategies/multi-search-replace"
-import { MultiFileSearchReplaceDiffStrategy } from "../diff/strategies/multi-file-search-replace"
-import { readApiMessages, saveApiMessages, readTaskMessages, saveTaskMessages, taskMetadata } from "../task-persistence"
-import { getEnvironmentDetails } from "../environment/getEnvironmentDetails"
+import { ToolRepetitionDetector } from "../tools/ToolRepetitionDetector";
+import { FileContextTracker } from "../context-tracking/FileContextTracker";
+import { RooIgnoreController } from "../ignore/RooIgnoreController";
+import { RooProtectedController } from "../protect/RooProtectedController";
+import { type AssistantMessageContent, parseAssistantMessage, presentAssistantMessage } from "../assistant-message";
+import { truncateConversationIfNeeded } from "../sliding-window";
+import { ClineProvider } from "../webview/ClineProvider";
+import { MultiSearchReplaceDiffStrategy } from "../diff/strategies/multi-search-replace";
+import { MultiFileSearchReplaceDiffStrategy } from "../diff/strategies/multi-file-search-replace";
+import { readApiMessages, saveApiMessages, readTaskMessages, saveTaskMessages, taskMetadata } from "../task-persistence";
+import { getEnvironmentDetails } from "../environment/getEnvironmentDetails";
 import {
 	type CheckpointDiffOptions,
 	type CheckpointRestoreOptions,
@@ -82,146 +82,178 @@ import {
 	checkpointSave,
 	checkpointRestore,
 	checkpointDiff,
-} from "../checkpoints"
-import { ApiMessage } from "../task-persistence/apiMessages"
-import { getMessagesSinceLastSummary, summarizeConversation } from "../condense"
-import { maybeRemoveImageBlocks } from "../../api/transform/image-cleaning"
-import { processKiloUserContentMentions } from "../mentions/processKiloUserContentMentions" // kilocode_change
-import { refreshWorkflowToggles } from "../context/instructions/workflows" // kilocode_change
-import { parseMentions } from "../mentions" // kilocode_change
-import { parseKiloSlashCommands } from "../slash-commands/kilo" // kilocode_change
-import { GlobalFileNames } from "../../shared/globalFileNames" // kilocode_change
-import { ensureLocalKilorulesDirExists } from "../context/instructions/kilo-rules" // kilocode_change
+} from "../checkpoints";
+import { ApiMessage } from "../task-persistence/apiMessages";
+import { getMessagesSinceLastSummary, summarizeConversation } from "../condense";
+import { maybeRemoveImageBlocks } from "../../api/transform/image-cleaning";
+import { processKiloUserContentMentions } from "../mentions/processKiloUserContentMentions"; // kilocode_change
+import { refreshWorkflowToggles } from "../context/instructions/workflows"; // kilocode_change
+import { parseMentions } from "../mentions"; // kilocode_change
+import { parseKiloSlashCommands } from "../slash-commands/kilo"; // kilocode_change
+import { GlobalFileNames } from "../../shared/globalFileNames"; // kilocode_change
+import { ensureLocalKilorulesDirExists } from "../context/instructions/kilo-rules"; // kilocode_change
 
-import fs from "node:fs"
-import { string } from "zod"
+import fs from "node:fs";
+import { string } from "zod";
 
 export type ClineEvents = {
-	message: [{ action: "created" | "updated"; message: ClineMessage }]
-	taskStarted: []
-	taskModeSwitched: [taskId: string, mode: string]
-	taskPaused: []
-	taskUnpaused: []
-	taskAskResponded: []
-	taskAborted: []
-	taskSpawned: [taskId: string]
-	taskCompleted: [taskId: string, tokenUsage: TokenUsage, toolUsage: ToolUsage]
-	taskTokenUsageUpdated: [taskId: string, tokenUsage: TokenUsage]
-	taskToolFailed: [taskId: string, tool: ToolName, error: string]
-}
+	message: [{ action: "created" | "updated"; message: ClineMessage; }];
+	taskStarted: [];
+	taskModeSwitched: [taskId: string, mode: string];
+	taskPaused: [];
+	taskUnpaused: [];
+	taskAskResponded: [];
+	taskAborted: [];
+	taskSpawned: [taskId: string];
+	taskCompleted: [taskId: string, tokenUsage: TokenUsage, toolUsage: ToolUsage];
+	taskTokenUsageUpdated: [taskId: string, tokenUsage: TokenUsage];
+	taskToolFailed: [taskId: string, tool: ToolName, error: string];
+};
 
 export type TaskOptions = {
-	context: vscode.ExtensionContext // kilocode_change
-	provider: ClineProvider
-	apiConfiguration: ProviderSettings
-	enableDiff?: boolean
-	enableCheckpoints?: boolean
-	fuzzyMatchThreshold?: number
-	consecutiveMistakeLimit?: number
-	task?: string
-	images?: string[]
-	historyItem?: HistoryItem
-	experiments?: Record<string, boolean>
-	startTask?: boolean
-	rootTask?: Task
-	parentTask?: Task
-	taskNumber?: number
-	onCreated?: (cline: Task) => void
-}
+	context: vscode.ExtensionContext; // kilocode_change
+	provider: ClineProvider;
+	apiConfiguration: ProviderSettings;
+	enableDiff?: boolean;
+	enableCheckpoints?: boolean;
+	fuzzyMatchThreshold?: number;
+	consecutiveMistakeLimit?: number;
+	task?: string;
+	images?: string[];
+	historyItem?: HistoryItem;
+	experiments?: Record<string, boolean>;
+	startTask?: boolean;
+	rootTask?: Task;
+	parentTask?: Task;
+	taskNumber?: number;
+	onCreated?: (cline: Task) => void;
+};
 
 // LOG FILES
-const llm_prompt = "/home/dmh2000/projects/kilocode/logs/llm-prompt-raw.json"
-const llm_response = "/home/dmh2000/projects/kilocode/logs/llm-response-raw.json"
-const llm_system = "/home/dmh2000/projects/kilocode/logs/llm-system.md"
+const llm_messages = "/home/dmh2000/projects/kilocode/logs/llm-messages-raw.json";
+const llm_system = "/home/dmh2000/projects/kilocode/logs/llm-system.md";
 
-type UserContent = Array<Anthropic.ContentBlockParam> // kilocode_change
+function logData(fname: string, source: string, msg: string | Anthropic.Messages.ContentBlockParam) {
+
+	const t = typeof msg;
+	let s: string;
+	let textBlock: Anthropic.TextBlockParam;
+
+	// msg is either a string or a ContentBlockParam object
+	if (t === "string") {
+		// turn it into a 'text' type
+		// const textBlock: Anthropic.TextBlockParam = {
+		// 	type: "text",
+		// 	text: (msg as unknown) as string
+		// };
+		s = msg as string;
+	} else {
+		// its one of the optional types
+		s = JSON.stringify(msg);
+	}
+
+	// convert it to a local object. all the optional types have a 'type' field
+	let obj = JSON.parse(s);
+
+	// add a timestamp
+	obj.timestamp = performance.now();
+	// add prompt/response
+	obj.source = source;
+
+	// log it
+	fs.appendFileSync(fname, JSON.stringify(obj));
+	// }
+	// some other type, skip logging for now
+}
+
+type UserContent = Array<Anthropic.ContentBlockParam>; // kilocode_change
 
 export class Task extends EventEmitter<ClineEvents> {
-	private context: vscode.ExtensionContext // kilocode_change
+	private context: vscode.ExtensionContext; // kilocode_change
 
-	readonly taskId: string
-	private taskIsFavorited?: boolean // kilocode_change
-	readonly instanceId: string
+	readonly taskId: string;
+	private taskIsFavorited?: boolean; // kilocode_change
+	readonly instanceId: string;
 
-	readonly rootTask: Task | undefined = undefined
-	readonly parentTask: Task | undefined = undefined
-	readonly taskNumber: number
-	readonly workspacePath: string
+	readonly rootTask: Task | undefined = undefined;
+	readonly parentTask: Task | undefined = undefined;
+	readonly taskNumber: number;
+	readonly workspacePath: string;
 
-	providerRef: WeakRef<ClineProvider>
-	private readonly globalStoragePath: string
-	abort: boolean = false
-	didFinishAbortingStream = false
-	abandoned = false
-	isInitialized = false
-	isPaused: boolean = false
-	pausedModeSlug: string = defaultModeSlug
-	private pauseInterval: NodeJS.Timeout | undefined
+	providerRef: WeakRef<ClineProvider>;
+	private readonly globalStoragePath: string;
+	abort: boolean = false;
+	didFinishAbortingStream = false;
+	abandoned = false;
+	isInitialized = false;
+	isPaused: boolean = false;
+	pausedModeSlug: string = defaultModeSlug;
+	private pauseInterval: NodeJS.Timeout | undefined;
 
 	// API
-	readonly apiConfiguration: ProviderSettings
-	api: ApiHandler
-	private static lastGlobalApiRequestTime?: number
-	private consecutiveAutoApprovedRequestsCount: number = 0
+	readonly apiConfiguration: ProviderSettings;
+	api: ApiHandler;
+	private static lastGlobalApiRequestTime?: number;
+	private consecutiveAutoApprovedRequestsCount: number = 0;
 
 	/**
 	 * Reset the global API request timestamp. This should only be used for testing.
 	 * @internal
 	 */
 	static resetGlobalApiRequestTime(): void {
-		Task.lastGlobalApiRequestTime = undefined
+		Task.lastGlobalApiRequestTime = undefined;
 	}
 
-	toolRepetitionDetector: ToolRepetitionDetector
-	rooIgnoreController?: RooIgnoreController
-	rooProtectedController?: RooProtectedController
-	fileContextTracker: FileContextTracker
-	urlContentFetcher: UrlContentFetcher
-	terminalProcess?: RooTerminalProcess
+	toolRepetitionDetector: ToolRepetitionDetector;
+	rooIgnoreController?: RooIgnoreController;
+	rooProtectedController?: RooProtectedController;
+	fileContextTracker: FileContextTracker;
+	urlContentFetcher: UrlContentFetcher;
+	terminalProcess?: RooTerminalProcess;
 
 	// Computer User
-	browserSession: BrowserSession
+	browserSession: BrowserSession;
 
 	// Editing
-	diffViewProvider: DiffViewProvider
-	diffStrategy?: DiffStrategy
-	diffEnabled: boolean = false
-	fuzzyMatchThreshold: number
-	didEditFile: boolean = false
+	diffViewProvider: DiffViewProvider;
+	diffStrategy?: DiffStrategy;
+	diffEnabled: boolean = false;
+	fuzzyMatchThreshold: number;
+	didEditFile: boolean = false;
 
 	// LLM Messages & Chat Messages
-	apiConversationHistory: ApiMessage[] = []
-	clineMessages: ClineMessage[] = []
+	apiConversationHistory: ApiMessage[] = [];
+	clineMessages: ClineMessage[] = [];
 
 	// Ask
-	private askResponse?: ClineAskResponse
-	private askResponseText?: string
-	private askResponseImages?: string[]
-	public lastMessageTs?: number
+	private askResponse?: ClineAskResponse;
+	private askResponseText?: string;
+	private askResponseImages?: string[];
+	public lastMessageTs?: number;
 
 	// Tool Use
-	consecutiveMistakeCount: number = 0
-	consecutiveMistakeLimit: number
-	consecutiveMistakeCountForApplyDiff: Map<string, number> = new Map()
-	toolUsage: ToolUsage = {}
+	consecutiveMistakeCount: number = 0;
+	consecutiveMistakeLimit: number;
+	consecutiveMistakeCountForApplyDiff: Map<string, number> = new Map();
+	toolUsage: ToolUsage = {};
 
 	// Checkpoints
-	enableCheckpoints: boolean
-	checkpointService?: RepoPerTaskCheckpointService
-	checkpointServiceInitializing = false
+	enableCheckpoints: boolean;
+	checkpointService?: RepoPerTaskCheckpointService;
+	checkpointServiceInitializing = false;
 
 	// Streaming
-	isWaitingForFirstChunk = false
-	isStreaming = false
-	currentStreamingContentIndex = 0
-	assistantMessageContent: AssistantMessageContent[] = []
-	presentAssistantMessageLocked = false
-	presentAssistantMessageHasPendingUpdates = false
-	userMessageContent: (Anthropic.TextBlockParam | Anthropic.ImageBlockParam)[] = []
-	userMessageContentReady = false
-	didRejectTool = false
-	didAlreadyUseTool = false
-	didCompleteReadingStream = false
+	isWaitingForFirstChunk = false;
+	isStreaming = false;
+	currentStreamingContentIndex = 0;
+	assistantMessageContent: AssistantMessageContent[] = [];
+	presentAssistantMessageLocked = false;
+	presentAssistantMessageHasPendingUpdates = false;
+	userMessageContent: (Anthropic.TextBlockParam | Anthropic.ImageBlockParam)[] = [];
+	userMessageContentReady = false;
+	didRejectTool = false;
+	didAlreadyUseTool = false;
+	didCompleteReadingStream = false;
 
 	constructor({
 		context, // kilocode_change
@@ -240,127 +272,127 @@ export class Task extends EventEmitter<ClineEvents> {
 		taskNumber = -1,
 		onCreated,
 	}: TaskOptions) {
-		super()
-		this.context = context // kilocode_change
+		super();
+		this.context = context; // kilocode_change
 
 		if (startTask && !task && !images && !historyItem) {
-			throw new Error("Either historyItem or task/images must be provided")
+			throw new Error("Either historyItem or task/images must be provided");
 		}
 
-		this.taskId = historyItem ? historyItem.id : crypto.randomUUID()
-		this.taskIsFavorited = historyItem?.isFavorited // kilocode_change
+		this.taskId = historyItem ? historyItem.id : crypto.randomUUID();
+		this.taskIsFavorited = historyItem?.isFavorited; // kilocode_change
 		// normal use-case is usually retry similar history task with new workspace
 		this.workspacePath = parentTask
 			? parentTask.workspacePath
-			: getWorkspacePath(path.join(os.homedir(), "Documents")) // kilocode_change: use Documents instead of Desktop as default
-		this.instanceId = crypto.randomUUID().slice(0, 8)
-		this.taskNumber = -1
+			: getWorkspacePath(path.join(os.homedir(), "Documents")); // kilocode_change: use Documents instead of Desktop as default
+		this.instanceId = crypto.randomUUID().slice(0, 8);
+		this.taskNumber = -1;
 
-		this.rooIgnoreController = new RooIgnoreController(this.cwd)
-		this.rooProtectedController = new RooProtectedController(this.cwd)
-		this.fileContextTracker = new FileContextTracker(provider, this.taskId)
+		this.rooIgnoreController = new RooIgnoreController(this.cwd);
+		this.rooProtectedController = new RooProtectedController(this.cwd);
+		this.fileContextTracker = new FileContextTracker(provider, this.taskId);
 
 		this.rooIgnoreController.initialize().catch((error) => {
-			console.error("Failed to initialize RooIgnoreController:", error)
-		})
+			console.error("Failed to initialize RooIgnoreController:", error);
+		});
 
-		this.apiConfiguration = apiConfiguration
-		this.api = buildApiHandler(apiConfiguration)
+		this.apiConfiguration = apiConfiguration;
+		this.api = buildApiHandler(apiConfiguration);
 
-		this.urlContentFetcher = new UrlContentFetcher(provider.context)
-		this.browserSession = new BrowserSession(provider.context)
-		this.diffEnabled = enableDiff
-		this.fuzzyMatchThreshold = fuzzyMatchThreshold
-		this.consecutiveMistakeLimit = consecutiveMistakeLimit
-		this.providerRef = new WeakRef(provider)
-		this.globalStoragePath = provider.context.globalStorageUri.fsPath
-		this.diffViewProvider = new DiffViewProvider(this.cwd)
-		this.enableCheckpoints = enableCheckpoints
+		this.urlContentFetcher = new UrlContentFetcher(provider.context);
+		this.browserSession = new BrowserSession(provider.context);
+		this.diffEnabled = enableDiff;
+		this.fuzzyMatchThreshold = fuzzyMatchThreshold;
+		this.consecutiveMistakeLimit = consecutiveMistakeLimit;
+		this.providerRef = new WeakRef(provider);
+		this.globalStoragePath = provider.context.globalStorageUri.fsPath;
+		this.diffViewProvider = new DiffViewProvider(this.cwd);
+		this.enableCheckpoints = enableCheckpoints;
 
-		this.rootTask = rootTask
-		this.parentTask = parentTask
-		this.taskNumber = taskNumber
+		this.rootTask = rootTask;
+		this.parentTask = parentTask;
+		this.taskNumber = taskNumber;
 
 		if (historyItem) {
-			TelemetryService.instance.captureTaskRestarted(this.taskId)
+			TelemetryService.instance.captureTaskRestarted(this.taskId);
 		} else {
-			TelemetryService.instance.captureTaskCreated(this.taskId)
+			TelemetryService.instance.captureTaskCreated(this.taskId);
 		}
 
 		// Only set up diff strategy if diff is enabled
 		if (this.diffEnabled) {
 			// Default to old strategy, will be updated if experiment is enabled
-			this.diffStrategy = new MultiSearchReplaceDiffStrategy(this.fuzzyMatchThreshold)
+			this.diffStrategy = new MultiSearchReplaceDiffStrategy(this.fuzzyMatchThreshold);
 
 			// Check experiment asynchronously and update strategy if needed
 			provider.getState().then((state) => {
 				const isMultiFileApplyDiffEnabled = experiments.isEnabled(
 					state.experiments ?? {},
 					EXPERIMENT_IDS.MULTI_FILE_APPLY_DIFF,
-				)
+				);
 
 				if (isMultiFileApplyDiffEnabled) {
-					this.diffStrategy = new MultiFileSearchReplaceDiffStrategy(this.fuzzyMatchThreshold)
+					this.diffStrategy = new MultiFileSearchReplaceDiffStrategy(this.fuzzyMatchThreshold);
 				}
-			})
+			});
 		}
 
-		this.toolRepetitionDetector = new ToolRepetitionDetector(this.consecutiveMistakeLimit)
+		this.toolRepetitionDetector = new ToolRepetitionDetector(this.consecutiveMistakeLimit);
 
-		onCreated?.(this)
+		onCreated?.(this);
 
 		if (startTask) {
 			if (task || images) {
-				this.startTask(task, images)
+				this.startTask(task, images);
 			} else if (historyItem) {
-				this.resumeTaskFromHistory()
+				this.resumeTaskFromHistory();
 			} else {
-				throw new Error("Either historyItem or task/images must be provided")
+				throw new Error("Either historyItem or task/images must be provided");
 			}
 		}
 	}
 
 	// kilocode_change start
 	private getContext(): vscode.ExtensionContext {
-		const context = this.context
+		const context = this.context;
 		if (!context) {
-			throw new Error("Unable to access extension context")
+			throw new Error("Unable to access extension context");
 		}
-		return context
+		return context;
 	}
 	// kilocode_change end
 
 	static create(options: TaskOptions): [Task, Promise<void>] {
-		const instance = new Task({ ...options, startTask: false })
-		const { images, task, historyItem } = options
-		let promise
+		const instance = new Task({ ...options, startTask: false });
+		const { images, task, historyItem } = options;
+		let promise;
 
 		if (images || task) {
-			promise = instance.startTask(task, images)
+			promise = instance.startTask(task, images);
 		} else if (historyItem) {
-			promise = instance.resumeTaskFromHistory()
+			promise = instance.resumeTaskFromHistory();
 		} else {
-			throw new Error("Either historyItem or task/images must be provided")
+			throw new Error("Either historyItem or task/images must be provided");
 		}
 
-		return [instance, promise]
+		return [instance, promise];
 	}
 
 	// API Messages
 
 	private async getSavedApiConversationHistory(): Promise<ApiMessage[]> {
-		return readApiMessages({ taskId: this.taskId, globalStoragePath: this.globalStoragePath })
+		return readApiMessages({ taskId: this.taskId, globalStoragePath: this.globalStoragePath });
 	}
 
 	private async addToApiConversationHistory(message: Anthropic.MessageParam) {
-		const messageWithTs = { ...message, ts: Date.now() }
-		this.apiConversationHistory.push(messageWithTs)
-		await this.saveApiConversationHistory()
+		const messageWithTs = { ...message, ts: Date.now() };
+		this.apiConversationHistory.push(messageWithTs);
+		await this.saveApiConversationHistory();
 	}
 
 	async overwriteApiConversationHistory(newHistory: ApiMessage[]) {
-		this.apiConversationHistory = newHistory
-		await this.saveApiConversationHistory()
+		this.apiConversationHistory = newHistory;
+		await this.saveApiConversationHistory();
 	}
 
 	private async saveApiConversationHistory() {
@@ -369,53 +401,53 @@ export class Task extends EventEmitter<ClineEvents> {
 				messages: this.apiConversationHistory,
 				taskId: this.taskId,
 				globalStoragePath: this.globalStoragePath,
-			})
+			});
 		} catch (error) {
 			// In the off chance this fails, we don't want to stop the task.
-			console.error("Failed to save API conversation history:", error)
+			console.error("Failed to save API conversation history:", error);
 		}
 	}
 
 	// Cline Messages
 
 	private async getSavedClineMessages(): Promise<ClineMessage[]> {
-		return readTaskMessages({ taskId: this.taskId, globalStoragePath: this.globalStoragePath })
+		return readTaskMessages({ taskId: this.taskId, globalStoragePath: this.globalStoragePath });
 	}
 
 	private async addToClineMessages(message: ClineMessage) {
-		this.clineMessages.push(message)
-		const provider = this.providerRef.deref()
-		await provider?.postStateToWebview()
-		this.emit("message", { action: "created", message })
-		await this.saveClineMessages()
+		this.clineMessages.push(message);
+		const provider = this.providerRef.deref();
+		await provider?.postStateToWebview();
+		this.emit("message", { action: "created", message });
+		await this.saveClineMessages();
 
-		const shouldCaptureMessage = message.partial !== true && CloudService.isEnabled()
+		const shouldCaptureMessage = message.partial !== true && CloudService.isEnabled();
 
 		if (shouldCaptureMessage) {
 			CloudService.instance.captureEvent({
 				event: TelemetryEventName.TASK_MESSAGE,
 				properties: { taskId: this.taskId, message },
-			})
+			});
 		}
 	}
 
 	public async overwriteClineMessages(newMessages: ClineMessage[]) {
-		this.clineMessages = newMessages
-		await this.saveClineMessages()
+		this.clineMessages = newMessages;
+		await this.saveClineMessages();
 	}
 
 	private async updateClineMessage(message: ClineMessage) {
-		const provider = this.providerRef.deref()
-		await provider?.postMessageToWebview({ type: "messageUpdated", clineMessage: message })
-		this.emit("message", { action: "updated", message })
+		const provider = this.providerRef.deref();
+		await provider?.postMessageToWebview({ type: "messageUpdated", clineMessage: message });
+		this.emit("message", { action: "updated", message });
 
-		const shouldCaptureMessage = message.partial !== true && CloudService.isEnabled()
+		const shouldCaptureMessage = message.partial !== true && CloudService.isEnabled();
 
 		if (shouldCaptureMessage) {
 			CloudService.instance.captureEvent({
 				event: TelemetryEventName.TASK_MESSAGE,
 				properties: { taskId: this.taskId, message },
-			})
+			});
 		}
 	}
 
@@ -425,7 +457,7 @@ export class Task extends EventEmitter<ClineEvents> {
 				messages: this.clineMessages,
 				taskId: this.taskId,
 				globalStoragePath: this.globalStoragePath,
-			})
+			});
 
 			const { historyItem, tokenUsage } = await taskMetadata({
 				messages: this.clineMessages,
@@ -433,13 +465,13 @@ export class Task extends EventEmitter<ClineEvents> {
 				taskNumber: this.taskNumber,
 				globalStoragePath: this.globalStoragePath,
 				workspace: this.cwd,
-			})
+			});
 
-			this.emit("taskTokenUsageUpdated", this.taskId, tokenUsage)
+			this.emit("taskTokenUsageUpdated", this.taskId, tokenUsage);
 
-			await this.providerRef.deref()?.updateTaskHistory(historyItem)
+			await this.providerRef.deref()?.updateTaskHistory(historyItem);
 		} catch (error) {
-			console.error("Failed to save messages:", error)
+			console.error("Failed to save messages:", error);
 		}
 	}
 
@@ -452,7 +484,7 @@ export class Task extends EventEmitter<ClineEvents> {
 		partial?: boolean,
 		progressStatus?: ToolProgressStatus,
 		isProtected?: boolean,
-	): Promise<{ response: ClineAskResponse; text?: string; images?: string[] }> {
+	): Promise<{ response: ClineAskResponse; text?: string; images?: string[]; }> {
 		// If this Cline instance was aborted by the provider, then the only
 		// thing keeping us alive is a promise still running in the background,
 		// in which case we don't want to send its result to the webview as it
@@ -462,45 +494,45 @@ export class Task extends EventEmitter<ClineEvents> {
 		// simply removes the reference to this instance, but the instance is
 		// still alive until this promise resolves or rejects.)
 		if (this.abort) {
-			throw new Error(`[KiloCode#ask] task ${this.taskId}.${this.instanceId} aborted`)
+			throw new Error(`[KiloCode#ask] task ${this.taskId}.${this.instanceId} aborted`);
 		}
 
-		let askTs: number
+		let askTs: number;
 
 		if (partial !== undefined) {
-			const lastMessage = this.clineMessages.at(-1)
+			const lastMessage = this.clineMessages.at(-1);
 
 			const isUpdatingPreviousPartial =
-				lastMessage && lastMessage.partial && lastMessage.type === "ask" && lastMessage.ask === type
+				lastMessage && lastMessage.partial && lastMessage.type === "ask" && lastMessage.ask === type;
 
 			if (partial) {
 				if (isUpdatingPreviousPartial) {
 					// Existing partial message, so update it.
-					lastMessage.text = text
-					lastMessage.partial = partial
-					lastMessage.progressStatus = progressStatus
-					lastMessage.isProtected = isProtected
+					lastMessage.text = text;
+					lastMessage.partial = partial;
+					lastMessage.progressStatus = progressStatus;
+					lastMessage.isProtected = isProtected;
 					// TODO: Be more efficient about saving and posting only new
 					// data or one whole message at a time so ignore partial for
 					// saves, and only post parts of partial message instead of
 					// whole array in new listener.
-					this.updateClineMessage(lastMessage)
-					throw new Error("Current ask promise was ignored (#1)")
+					this.updateClineMessage(lastMessage);
+					throw new Error("Current ask promise was ignored (#1)");
 				} else {
 					// This is a new partial message, so add it with partial
 					// state.
-					askTs = Date.now()
-					this.lastMessageTs = askTs
-					await this.addToClineMessages({ ts: askTs, type: "ask", ask: type, text, partial, isProtected })
-					throw new Error("Current ask promise was ignored (#2)")
+					askTs = Date.now();
+					this.lastMessageTs = askTs;
+					await this.addToClineMessages({ ts: askTs, type: "ask", ask: type, text, partial, isProtected });
+					throw new Error("Current ask promise was ignored (#2)");
 				}
 			} else {
 				if (isUpdatingPreviousPartial) {
 					// This is the complete version of a previously partial
 					// message, so replace the partial with the complete version.
-					this.askResponse = undefined
-					this.askResponseText = undefined
-					this.askResponseImages = undefined
+					this.askResponse = undefined;
+					this.askResponseText = undefined;
+					this.askResponseImages = undefined;
 
 					// Bug for the history books:
 					// In the webview we use the ts as the chatrow key for the
@@ -513,92 +545,92 @@ export class Task extends EventEmitter<ClineEvents> {
 					// lists, it's likely because the key prop is not stable.
 					// So in this case we must make sure that the message ts is
 					// never altered after first setting it.
-					askTs = lastMessage.ts
-					this.lastMessageTs = askTs
-					lastMessage.text = text
-					lastMessage.partial = false
-					lastMessage.progressStatus = progressStatus
-					lastMessage.isProtected = isProtected
-					await this.saveClineMessages()
-					this.updateClineMessage(lastMessage)
+					askTs = lastMessage.ts;
+					this.lastMessageTs = askTs;
+					lastMessage.text = text;
+					lastMessage.partial = false;
+					lastMessage.progressStatus = progressStatus;
+					lastMessage.isProtected = isProtected;
+					await this.saveClineMessages();
+					this.updateClineMessage(lastMessage);
 				} else {
 					// This is a new and complete message, so add it like normal.
-					this.askResponse = undefined
-					this.askResponseText = undefined
-					this.askResponseImages = undefined
-					askTs = Date.now()
-					this.lastMessageTs = askTs
-					await this.addToClineMessages({ ts: askTs, type: "ask", ask: type, text, isProtected })
+					this.askResponse = undefined;
+					this.askResponseText = undefined;
+					this.askResponseImages = undefined;
+					askTs = Date.now();
+					this.lastMessageTs = askTs;
+					await this.addToClineMessages({ ts: askTs, type: "ask", ask: type, text, isProtected });
 				}
 			}
 		} else {
 			// This is a new non-partial message, so add it like normal.
-			this.askResponse = undefined
-			this.askResponseText = undefined
-			this.askResponseImages = undefined
-			askTs = Date.now()
-			this.lastMessageTs = askTs
-			await this.addToClineMessages({ ts: askTs, type: "ask", ask: type, text, isProtected })
+			this.askResponse = undefined;
+			this.askResponseText = undefined;
+			this.askResponseImages = undefined;
+			askTs = Date.now();
+			this.lastMessageTs = askTs;
+			await this.addToClineMessages({ ts: askTs, type: "ask", ask: type, text, isProtected });
 		}
 
-		await pWaitFor(() => this.askResponse !== undefined || this.lastMessageTs !== askTs, { interval: 100 })
+		await pWaitFor(() => this.askResponse !== undefined || this.lastMessageTs !== askTs, { interval: 100 });
 
 		if (this.lastMessageTs !== askTs) {
 			// Could happen if we send multiple asks in a row i.e. with
 			// command_output. It's important that when we know an ask could
 			// fail, it is handled gracefully.
-			throw new Error("Current ask promise was ignored")
+			throw new Error("Current ask promise was ignored");
 		}
 
-		const result = { response: this.askResponse!, text: this.askResponseText, images: this.askResponseImages }
-		this.askResponse = undefined
-		this.askResponseText = undefined
-		this.askResponseImages = undefined
-		this.emit("taskAskResponded")
-		return result
+		const result = { response: this.askResponse!, text: this.askResponseText, images: this.askResponseImages };
+		this.askResponse = undefined;
+		this.askResponseText = undefined;
+		this.askResponseImages = undefined;
+		this.emit("taskAskResponded");
+		return result;
 	}
 
 	async handleWebviewAskResponse(askResponse: ClineAskResponse, text?: string, images?: string[]) {
-		this.askResponse = askResponse
-		this.askResponseText = text
-		this.askResponseImages = images
+		this.askResponse = askResponse;
+		this.askResponseText = text;
+		this.askResponseImages = images;
 	}
 
 	async handleTerminalOperation(terminalOperation: "continue" | "abort") {
 		if (terminalOperation === "continue") {
-			this.terminalProcess?.continue()
+			this.terminalProcess?.continue();
 		} else if (terminalOperation === "abort") {
-			this.terminalProcess?.abort()
+			this.terminalProcess?.abort();
 		}
 	}
 
 	public async condenseContext(): Promise<void> {
-		const systemPrompt = await this.getSystemPrompt()
+		const systemPrompt = await this.getSystemPrompt();
 
 		// Get condensing configuration
 		// Using type assertion to handle the case where Phase 1 hasn't been implemented yet
-		const state = await this.providerRef.deref()?.getState()
-		const customCondensingPrompt = state ? (state as any).customCondensingPrompt : undefined
-		const condensingApiConfigId = state ? (state as any).condensingApiConfigId : undefined
-		const listApiConfigMeta = state ? (state as any).listApiConfigMeta : undefined
+		const state = await this.providerRef.deref()?.getState();
+		const customCondensingPrompt = state ? (state as any).customCondensingPrompt : undefined;
+		const condensingApiConfigId = state ? (state as any).condensingApiConfigId : undefined;
+		const listApiConfigMeta = state ? (state as any).listApiConfigMeta : undefined;
 
 		// Determine API handler to use
-		let condensingApiHandler: ApiHandler | undefined
+		let condensingApiHandler: ApiHandler | undefined;
 		if (condensingApiConfigId && listApiConfigMeta && Array.isArray(listApiConfigMeta)) {
 			// Using type assertion for the id property to avoid implicit any
-			const matchingConfig = listApiConfigMeta.find((config: any) => config.id === condensingApiConfigId)
+			const matchingConfig = listApiConfigMeta.find((config: any) => config.id === condensingApiConfigId);
 			if (matchingConfig) {
 				const profile = await this.providerRef.deref()?.providerSettingsManager.getProfile({
 					id: condensingApiConfigId,
-				})
+				});
 				// Ensure profile and apiProvider exist before trying to build handler
 				if (profile && profile.apiProvider) {
-					condensingApiHandler = buildApiHandler(profile)
+					condensingApiHandler = buildApiHandler(profile);
 				}
 			}
 		}
 
-		const { contextTokens: prevContextTokens } = this.getTokenUsage()
+		const { contextTokens: prevContextTokens } = this.getTokenUsage();
 		const {
 			messages,
 			summary,
@@ -614,7 +646,7 @@ export class Task extends EventEmitter<ClineEvents> {
 			false, // manual trigger
 			customCondensingPrompt, // User's custom prompt
 			condensingApiHandler, // Specific handler for condensing
-		)
+		);
 		if (error) {
 			this.say(
 				"condense_context_error",
@@ -624,11 +656,11 @@ export class Task extends EventEmitter<ClineEvents> {
 				undefined /* checkpoint */,
 				undefined /* progressStatus */,
 				{ isNonInteractive: true } /* options */,
-			)
-			return
+			);
+			return;
 		}
-		await this.overwriteApiConversationHistory(messages)
-		const contextCondense: ContextCondense = { summary, cost, newContextTokens, prevContextTokens }
+		await this.overwriteApiConversationHistory(messages);
+		const contextCondense: ContextCondense = { summary, cost, newContextTokens, prevContextTokens };
 		await this.say(
 			"condense_context",
 			undefined /* text */,
@@ -638,7 +670,7 @@ export class Task extends EventEmitter<ClineEvents> {
 			undefined /* progressStatus */,
 			{ isNonInteractive: true } /* options */,
 			contextCondense,
-		)
+		);
 	}
 
 	async say(
@@ -649,34 +681,34 @@ export class Task extends EventEmitter<ClineEvents> {
 		checkpoint?: Record<string, unknown>,
 		progressStatus?: ToolProgressStatus,
 		options: {
-			isNonInteractive?: boolean
+			isNonInteractive?: boolean;
 		} = {},
 		contextCondense?: ContextCondense,
 	): Promise<undefined> {
 		if (this.abort) {
-			throw new Error(`[Kilo Code#say] task ${this.taskId}.${this.instanceId} aborted`)
+			throw new Error(`[Kilo Code#say] task ${this.taskId}.${this.instanceId} aborted`);
 		}
 
 		if (partial !== undefined) {
-			const lastMessage = this.clineMessages.at(-1)
+			const lastMessage = this.clineMessages.at(-1);
 
 			const isUpdatingPreviousPartial =
-				lastMessage && lastMessage.partial && lastMessage.type === "say" && lastMessage.say === type
+				lastMessage && lastMessage.partial && lastMessage.type === "say" && lastMessage.say === type;
 
 			if (partial) {
 				if (isUpdatingPreviousPartial) {
 					// Existing partial message, so update it.
-					lastMessage.text = text
-					lastMessage.images = images
-					lastMessage.partial = partial
-					lastMessage.progressStatus = progressStatus
-					this.updateClineMessage(lastMessage)
+					lastMessage.text = text;
+					lastMessage.images = images;
+					lastMessage.partial = partial;
+					lastMessage.progressStatus = progressStatus;
+					this.updateClineMessage(lastMessage);
 				} else {
 					// This is a new partial message, so add it with partial state.
-					const sayTs = Date.now()
+					const sayTs = Date.now();
 
 					if (!options.isNonInteractive) {
-						this.lastMessageTs = sayTs
+						this.lastMessageTs = sayTs;
 					}
 
 					await this.addToClineMessages({
@@ -687,7 +719,7 @@ export class Task extends EventEmitter<ClineEvents> {
 						images,
 						partial,
 						contextCondense,
-					})
+					});
 				}
 			} else {
 				// New now have a complete version of a previously partial message.
@@ -695,41 +727,41 @@ export class Task extends EventEmitter<ClineEvents> {
 				// message, so replace the partial with the complete version.
 				if (isUpdatingPreviousPartial) {
 					if (!options.isNonInteractive) {
-						this.lastMessageTs = lastMessage.ts
+						this.lastMessageTs = lastMessage.ts;
 					}
 
-					lastMessage.text = text
-					lastMessage.images = images
-					lastMessage.partial = false
-					lastMessage.progressStatus = progressStatus
+					lastMessage.text = text;
+					lastMessage.images = images;
+					lastMessage.partial = false;
+					lastMessage.progressStatus = progressStatus;
 
 					// Instead of streaming partialMessage events, we do a save
 					// and post like normal to persist to disk.
-					await this.saveClineMessages()
+					await this.saveClineMessages();
 
 					// More performant than an entire `postStateToWebview`.
-					this.updateClineMessage(lastMessage)
+					this.updateClineMessage(lastMessage);
 				} else {
 					// This is a new and complete message, so add it like normal.
-					const sayTs = Date.now()
+					const sayTs = Date.now();
 
 					if (!options.isNonInteractive) {
-						this.lastMessageTs = sayTs
+						this.lastMessageTs = sayTs;
 					}
 
-					await this.addToClineMessages({ ts: sayTs, type: "say", say: type, text, images, contextCondense })
+					await this.addToClineMessages({ ts: sayTs, type: "say", say: type, text, images, contextCondense });
 				}
 			}
 		} else {
 			// This is a new non-partial message, so add it like normal.
-			const sayTs = Date.now()
+			const sayTs = Date.now();
 
 			// A "non-interactive" message is a message is one that the user
 			// does not need to respond to. We don't want these message types
 			// to trigger an update to `lastMessageTs` since they can be created
 			// asynchronously and could interrupt a pending ask.
 			if (!options.isNonInteractive) {
-				this.lastMessageTs = sayTs
+				this.lastMessageTs = sayTs;
 			}
 
 			await this.addToClineMessages({
@@ -740,18 +772,17 @@ export class Task extends EventEmitter<ClineEvents> {
 				images,
 				checkpoint,
 				contextCondense,
-			})
+			});
 		}
 	}
 
 	async sayAndCreateMissingParamError(toolName: ToolName, paramName: string, relPath?: string) {
 		await this.say(
 			"error",
-			`Kilo Code tried to use ${toolName}${
-				relPath ? ` for '${relPath.toPosix()}'` : ""
+			`Kilo Code tried to use ${toolName}${relPath ? ` for '${relPath.toPosix()}'` : ""
 			} without value for required parameter '${paramName}'. Retrying...`,
-		)
-		return formatResponse.toolError(formatResponse.missingToolParameterError(paramName))
+		);
+		return formatResponse.toolError(formatResponse.missingToolParameterError(paramName));
 	}
 
 	// Start / Abort / Resume
@@ -763,16 +794,16 @@ export class Task extends EventEmitter<ClineEvents> {
 		// `clineMessages` might not be empty, so we need to set it to [] when
 		// we create a new Cline client (otherwise webview would show stale
 		// messages from previous session).
-		this.clineMessages = []
-		this.apiConversationHistory = []
-		await this.providerRef.deref()?.postStateToWebview()
+		this.clineMessages = [];
+		this.apiConversationHistory = [];
+		await this.providerRef.deref()?.postStateToWebview();
 
-		await this.say("text", task, images)
-		this.isInitialized = true
+		await this.say("text", task, images);
+		this.isInitialized = true;
 
-		let imageBlocks: Anthropic.ImageBlockParam[] = formatResponse.imageBlocks(images)
+		let imageBlocks: Anthropic.ImageBlockParam[] = formatResponse.imageBlocks(images);
 
-		console.log(`[subtasks] task ${this.taskId}.${this.instanceId} starting`)
+		console.log(`[subtasks] task ${this.taskId}.${this.instanceId} starting`);
 
 		await this.initiateTaskLoop([
 			{
@@ -780,62 +811,62 @@ export class Task extends EventEmitter<ClineEvents> {
 				text: `<task>\n${task}\n</task>`,
 			},
 			...imageBlocks,
-		])
+		]);
 	}
 
 	public async resumePausedTask(lastMessage: string) {
 		// Release this Cline instance from paused state.
-		this.isPaused = false
-		this.emit("taskUnpaused")
+		this.isPaused = false;
+		this.emit("taskUnpaused");
 
 		// Fake an answer from the subtask that it has completed running and
 		// this is the result of what it has done  add the message to the chat
 		// history and to the webview ui.
 		try {
-			await this.say("subtask_result", lastMessage)
+			await this.say("subtask_result", lastMessage);
 
 			await this.addToApiConversationHistory({
 				role: "user",
 				content: [{ type: "text", text: `[new_task completed] Result: ${lastMessage}` }],
-			})
+			});
 		} catch (error) {
 			this.providerRef
 				.deref()
-				?.log(`Error failed to add reply from subtask into conversation of parent task, error: ${error}`)
+				?.log(`Error failed to add reply from subtask into conversation of parent task, error: ${error}`);
 
-			throw error
+			throw error;
 		}
 	}
 
 	private async resumeTaskFromHistory() {
-		const modifiedClineMessages = await this.getSavedClineMessages()
+		const modifiedClineMessages = await this.getSavedClineMessages();
 
 		// Remove any resume messages that may have been added before
 		const lastRelevantMessageIndex = findLastIndex(
 			modifiedClineMessages,
 			(m) => !(m.ask === "resume_task" || m.ask === "resume_completed_task"),
-		)
+		);
 
 		if (lastRelevantMessageIndex !== -1) {
-			modifiedClineMessages.splice(lastRelevantMessageIndex + 1)
+			modifiedClineMessages.splice(lastRelevantMessageIndex + 1);
 		}
 
 		// since we don't use api_req_finished anymore, we need to check if the last api_req_started has a cost value, if it doesn't and no cancellation reason to present, then we remove it since it indicates an api request without any partial content streamed
 		const lastApiReqStartedIndex = findLastIndex(
 			modifiedClineMessages,
 			(m) => m.type === "say" && m.say === "api_req_started",
-		)
+		);
 
 		if (lastApiReqStartedIndex !== -1) {
-			const lastApiReqStarted = modifiedClineMessages[lastApiReqStartedIndex]
-			const { cost, cancelReason }: ClineApiReqInfo = JSON.parse(lastApiReqStarted.text || "{}")
+			const lastApiReqStarted = modifiedClineMessages[lastApiReqStartedIndex];
+			const { cost, cancelReason }: ClineApiReqInfo = JSON.parse(lastApiReqStarted.text || "{}");
 			if (cost === undefined && cancelReason === undefined) {
-				modifiedClineMessages.splice(lastApiReqStartedIndex, 1)
+				modifiedClineMessages.splice(lastApiReqStartedIndex, 1);
 			}
 		}
 
-		await this.overwriteClineMessages(modifiedClineMessages)
-		this.clineMessages = await this.getSavedClineMessages()
+		await this.overwriteClineMessages(modifiedClineMessages);
+		this.clineMessages = await this.getSavedClineMessages();
 
 		// Now present the cline messages to the user and ask if they want to
 		// resume (NOTE: we ran into a bug before where the
@@ -843,34 +874,34 @@ export class Task extends EventEmitter<ClineEvents> {
 		// task, and it was because we were waiting for resume).
 		// This is important in case the user deletes messages without resuming
 		// the task first.
-		this.apiConversationHistory = await this.getSavedApiConversationHistory()
+		this.apiConversationHistory = await this.getSavedApiConversationHistory();
 
 		const lastClineMessage = this.clineMessages
 			.slice()
 			.reverse()
-			.find((m) => !(m.ask === "resume_task" || m.ask === "resume_completed_task")) // could be multiple resume tasks
+			.find((m) => !(m.ask === "resume_task" || m.ask === "resume_completed_task")); // could be multiple resume tasks
 
-		let askType: ClineAsk
+		let askType: ClineAsk;
 		if (lastClineMessage?.ask === "completion_result") {
-			askType = "resume_completed_task"
+			askType = "resume_completed_task";
 		} else {
-			askType = "resume_task"
+			askType = "resume_task";
 		}
 
-		this.isInitialized = true
+		this.isInitialized = true;
 
-		const { response, text, images } = await this.ask(askType) // calls poststatetowebview
-		let responseText: string | undefined
-		let responseImages: string[] | undefined
+		const { response, text, images } = await this.ask(askType); // calls poststatetowebview
+		let responseText: string | undefined;
+		let responseImages: string[] | undefined;
 		if (response === "messageResponse") {
-			await this.say("user_feedback", text, images)
-			responseText = text
-			responseImages = images
+			await this.say("user_feedback", text, images);
+			responseText = text;
+			responseImages = images;
 		}
 
 		// Make sure that the api conversation history can be resumed by the API,
 		// even if it goes out of sync with cline messages.
-		let existingApiConversationHistory: ApiMessage[] = await this.getSavedApiConversationHistory()
+		let existingApiConversationHistory: ApiMessage[] = await this.getSavedApiConversationHistory();
 
 		// v2.0 xml tags refactor caveat: since we don't use tools anymore, we need to replace all tool use blocks with a text block since the API disallows conversations with tool uses and no tool schema
 		const conversationWithoutToolBlocks = existingApiConversationHistory.map((message) => {
@@ -882,30 +913,30 @@ export class Task extends EventEmitter<ClineEvents> {
 						// invoke tools.
 						const inputAsXml = Object.entries(block.input as Record<string, string>)
 							.map(([key, value]) => `<${key}>\n${value}\n</${key}>`)
-							.join("\n")
+							.join("\n");
 						return {
 							type: "text",
 							text: `<${block.name}>\n${inputAsXml}\n</${block.name}>`,
-						} as Anthropic.Messages.TextBlockParam
+						} as Anthropic.Messages.TextBlockParam;
 					} else if (block.type === "tool_result") {
 						// Convert block.content to text block array, removing images
 						const contentAsTextBlocks = Array.isArray(block.content)
 							? block.content.filter((item) => item.type === "text")
-							: [{ type: "text", text: block.content }]
-						const textContent = contentAsTextBlocks.map((item) => item.text).join("\n\n")
-						const toolName = findToolName(block.tool_use_id, existingApiConversationHistory)
+							: [{ type: "text", text: block.content }];
+						const textContent = contentAsTextBlocks.map((item) => item.text).join("\n\n");
+						const toolName = findToolName(block.tool_use_id, existingApiConversationHistory);
 						return {
 							type: "text",
 							text: `[${toolName} Result]\n\n${textContent}`,
-						} as Anthropic.Messages.TextBlockParam
+						} as Anthropic.Messages.TextBlockParam;
 					}
-					return block
-				})
-				return { ...message, content: newContent }
+					return block;
+				});
+				return { ...message, content: newContent };
 			}
-			return message
-		})
-		existingApiConversationHistory = conversationWithoutToolBlocks
+			return message;
+		});
+		existingApiConversationHistory = conversationWithoutToolBlocks;
 
 		// FIXME: remove tool use blocks altogether
 
@@ -915,52 +946,52 @@ export class Task extends EventEmitter<ClineEvents> {
 
 		// if the last message is a user message, we can need to get the assistant message before it to see if it made tool calls, and if so, fill in the remaining tool responses with 'interrupted'
 
-		let modifiedOldUserContent: Anthropic.Messages.ContentBlockParam[] // either the last message if its user message, or the user message before the last (assistant) message
-		let modifiedApiConversationHistory: ApiMessage[] // need to remove the last user message to replace with new modified user message
+		let modifiedOldUserContent: Anthropic.Messages.ContentBlockParam[]; // either the last message if its user message, or the user message before the last (assistant) message
+		let modifiedApiConversationHistory: ApiMessage[]; // need to remove the last user message to replace with new modified user message
 		if (existingApiConversationHistory.length > 0) {
-			const lastMessage = existingApiConversationHistory[existingApiConversationHistory.length - 1]
+			const lastMessage = existingApiConversationHistory[existingApiConversationHistory.length - 1];
 
 			if (lastMessage.role === "assistant") {
 				const content = Array.isArray(lastMessage.content)
 					? lastMessage.content
-					: [{ type: "text", text: lastMessage.content }]
-				const hasToolUse = content.some((block) => block.type === "tool_use")
+					: [{ type: "text", text: lastMessage.content }];
+				const hasToolUse = content.some((block) => block.type === "tool_use");
 
 				if (hasToolUse) {
 					const toolUseBlocks = content.filter(
 						(block) => block.type === "tool_use",
-					) as Anthropic.Messages.ToolUseBlock[]
+					) as Anthropic.Messages.ToolUseBlock[];
 					const toolResponses: Anthropic.ToolResultBlockParam[] = toolUseBlocks.map((block) => ({
 						type: "tool_result",
 						tool_use_id: block.id,
 						content: "Task was interrupted before this tool call could be completed.",
-					}))
-					modifiedApiConversationHistory = [...existingApiConversationHistory] // no changes
-					modifiedOldUserContent = [...toolResponses]
+					}));
+					modifiedApiConversationHistory = [...existingApiConversationHistory]; // no changes
+					modifiedOldUserContent = [...toolResponses];
 				} else {
-					modifiedApiConversationHistory = [...existingApiConversationHistory]
-					modifiedOldUserContent = []
+					modifiedApiConversationHistory = [...existingApiConversationHistory];
+					modifiedOldUserContent = [];
 				}
 			} else if (lastMessage.role === "user") {
 				const previousAssistantMessage: ApiMessage | undefined =
-					existingApiConversationHistory[existingApiConversationHistory.length - 2]
+					existingApiConversationHistory[existingApiConversationHistory.length - 2];
 
 				const existingUserContent: Anthropic.Messages.ContentBlockParam[] = Array.isArray(lastMessage.content)
 					? lastMessage.content
-					: [{ type: "text", text: lastMessage.content }]
+					: [{ type: "text", text: lastMessage.content }];
 				if (previousAssistantMessage && previousAssistantMessage.role === "assistant") {
 					const assistantContent = Array.isArray(previousAssistantMessage.content)
 						? previousAssistantMessage.content
-						: [{ type: "text", text: previousAssistantMessage.content }]
+						: [{ type: "text", text: previousAssistantMessage.content }];
 
 					const toolUseBlocks = assistantContent.filter(
 						(block) => block.type === "tool_use",
-					) as Anthropic.Messages.ToolUseBlock[]
+					) as Anthropic.Messages.ToolUseBlock[];
 
 					if (toolUseBlocks.length > 0) {
 						const existingToolResults = existingUserContent.filter(
 							(block) => block.type === "tool_result",
-						) as Anthropic.ToolResultBlockParam[]
+						) as Anthropic.ToolResultBlockParam[];
 
 						const missingToolResponses: Anthropic.ToolResultBlockParam[] = toolUseBlocks
 							.filter(
@@ -970,156 +1001,155 @@ export class Task extends EventEmitter<ClineEvents> {
 								type: "tool_result",
 								tool_use_id: toolUse.id,
 								content: "Task was interrupted before this tool call could be completed.",
-							}))
+							}));
 
-						modifiedApiConversationHistory = existingApiConversationHistory.slice(0, -1) // removes the last user message
-						modifiedOldUserContent = [...existingUserContent, ...missingToolResponses]
+						modifiedApiConversationHistory = existingApiConversationHistory.slice(0, -1); // removes the last user message
+						modifiedOldUserContent = [...existingUserContent, ...missingToolResponses];
 					} else {
-						modifiedApiConversationHistory = existingApiConversationHistory.slice(0, -1)
-						modifiedOldUserContent = [...existingUserContent]
+						modifiedApiConversationHistory = existingApiConversationHistory.slice(0, -1);
+						modifiedOldUserContent = [...existingUserContent];
 					}
 				} else {
-					modifiedApiConversationHistory = existingApiConversationHistory.slice(0, -1)
-					modifiedOldUserContent = [...existingUserContent]
+					modifiedApiConversationHistory = existingApiConversationHistory.slice(0, -1);
+					modifiedOldUserContent = [...existingUserContent];
 				}
 			} else {
-				throw new Error("Unexpected: Last message is not a user or assistant message")
+				throw new Error("Unexpected: Last message is not a user or assistant message");
 			}
 		} else {
-			throw new Error("Unexpected: No existing API conversation history")
+			throw new Error("Unexpected: No existing API conversation history");
 		}
 
-		let newUserContent: Anthropic.Messages.ContentBlockParam[] = [...modifiedOldUserContent]
+		let newUserContent: Anthropic.Messages.ContentBlockParam[] = [...modifiedOldUserContent];
 
 		const agoText = ((): string => {
-			const timestamp = lastClineMessage?.ts ?? Date.now()
-			const now = Date.now()
-			const diff = now - timestamp
-			const minutes = Math.floor(diff / 60000)
-			const hours = Math.floor(minutes / 60)
-			const days = Math.floor(hours / 24)
+			const timestamp = lastClineMessage?.ts ?? Date.now();
+			const now = Date.now();
+			const diff = now - timestamp;
+			const minutes = Math.floor(diff / 60000);
+			const hours = Math.floor(minutes / 60);
+			const days = Math.floor(hours / 24);
 
 			if (days > 0) {
-				return `${days} day${days > 1 ? "s" : ""} ago`
+				return `${days} day${days > 1 ? "s" : ""} ago`;
 			}
 			if (hours > 0) {
-				return `${hours} hour${hours > 1 ? "s" : ""} ago`
+				return `${hours} hour${hours > 1 ? "s" : ""} ago`;
 			}
 			if (minutes > 0) {
-				return `${minutes} minute${minutes > 1 ? "s" : ""} ago`
+				return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
 			}
-			return "just now"
-		})()
+			return "just now";
+		})();
 
 		const lastTaskResumptionIndex = newUserContent.findIndex(
 			(x) => x.type === "text" && x.text.startsWith("[TASK RESUMPTION]"),
-		)
+		);
 		if (lastTaskResumptionIndex !== -1) {
-			newUserContent.splice(lastTaskResumptionIndex, newUserContent.length - lastTaskResumptionIndex)
+			newUserContent.splice(lastTaskResumptionIndex, newUserContent.length - lastTaskResumptionIndex);
 		}
 
-		const wasRecent = lastClineMessage?.ts && Date.now() - lastClineMessage.ts < 30_000
+		const wasRecent = lastClineMessage?.ts && Date.now() - lastClineMessage.ts < 30_000;
 
 		newUserContent.push({
 			type: "text",
 			text:
-				`[TASK RESUMPTION] This task was interrupted ${agoText}. It may or may not be complete, so please reassess the task context. Be aware that the project state may have changed since then. If the task has not been completed, retry the last step before interruption and proceed with completing the task.\n\nNote: If you previously attempted a tool use that the user did not provide a result for, you should assume the tool use was not successful and assess whether you should retry. If the last tool was a browser_action, the browser has been closed and you must launch a new browser if needed.${
-					wasRecent
-						? "\n\nIMPORTANT: If the last tool use was a write_to_file that was interrupted, the file was reverted back to its original state before the interrupted edit, and you do NOT need to re-read the file as you already have its up-to-date contents."
-						: ""
+				`[TASK RESUMPTION] This task was interrupted ${agoText}. It may or may not be complete, so please reassess the task context. Be aware that the project state may have changed since then. If the task has not been completed, retry the last step before interruption and proceed with completing the task.\n\nNote: If you previously attempted a tool use that the user did not provide a result for, you should assume the tool use was not successful and assess whether you should retry. If the last tool was a browser_action, the browser has been closed and you must launch a new browser if needed.${wasRecent
+					? "\n\nIMPORTANT: If the last tool use was a write_to_file that was interrupted, the file was reverted back to its original state before the interrupted edit, and you do NOT need to re-read the file as you already have its up-to-date contents."
+					: ""
 				}` +
 				(responseText
 					? `\n\nNew instructions for task continuation:\n<user_message>\n${responseText}\n</user_message>`
 					: ""),
-		})
+		});
 
 		if (responseImages && responseImages.length > 0) {
-			newUserContent.push(...formatResponse.imageBlocks(responseImages))
+			newUserContent.push(...formatResponse.imageBlocks(responseImages));
 		}
 
-		await this.overwriteApiConversationHistory(modifiedApiConversationHistory)
+		await this.overwriteApiConversationHistory(modifiedApiConversationHistory);
 
-		console.log(`[subtasks] task ${this.taskId}.${this.instanceId} resuming from history item`)
+		console.log(`[subtasks] task ${this.taskId}.${this.instanceId} resuming from history item`);
 
-		await this.initiateTaskLoop(newUserContent)
+		await this.initiateTaskLoop(newUserContent);
 	}
 
 	public dispose(): void {
 		// Stop waiting for child task completion.
 		if (this.pauseInterval) {
-			clearInterval(this.pauseInterval)
-			this.pauseInterval = undefined
+			clearInterval(this.pauseInterval);
+			this.pauseInterval = undefined;
 		}
 
 		// Release any terminals associated with this task.
 		try {
 			// Release any terminals associated with this task.
-			TerminalRegistry.releaseTerminalsForTask(this.taskId)
+			TerminalRegistry.releaseTerminalsForTask(this.taskId);
 		} catch (error) {
-			console.error("Error releasing terminals:", error)
+			console.error("Error releasing terminals:", error);
 		}
 
 		try {
-			this.urlContentFetcher.closeBrowser()
+			this.urlContentFetcher.closeBrowser();
 		} catch (error) {
-			console.error("Error closing URL content fetcher browser:", error)
+			console.error("Error closing URL content fetcher browser:", error);
 		}
 
 		try {
-			this.browserSession.closeBrowser()
+			this.browserSession.closeBrowser();
 		} catch (error) {
-			console.error("Error closing browser session:", error)
+			console.error("Error closing browser session:", error);
 		}
 
 		try {
 			if (this.rooIgnoreController) {
-				this.rooIgnoreController.dispose()
-				this.rooIgnoreController = undefined
+				this.rooIgnoreController.dispose();
+				this.rooIgnoreController = undefined;
 			}
 		} catch (error) {
-			console.error("Error disposing RooIgnoreController:", error)
+			console.error("Error disposing RooIgnoreController:", error);
 			// This is the critical one for the leak fix
 		}
 
 		try {
-			this.fileContextTracker.dispose()
+			this.fileContextTracker.dispose();
 		} catch (error) {
-			console.error("Error disposing file context tracker:", error)
+			console.error("Error disposing file context tracker:", error);
 		}
 
 		try {
 			// If we're not streaming then `abortStream` won't be called
 			if (this.isStreaming && this.diffViewProvider.isEditing) {
-				this.diffViewProvider.revertChanges().catch(console.error)
+				this.diffViewProvider.revertChanges().catch(console.error);
 			}
 		} catch (error) {
-			console.error("Error reverting diff changes:", error)
+			console.error("Error reverting diff changes:", error);
 		}
 	}
 
 	public async abortTask(isAbandoned = false) {
-		console.log(`[subtasks] aborting task ${this.taskId}.${this.instanceId}`)
+		console.log(`[subtasks] aborting task ${this.taskId}.${this.instanceId}`);
 
 		// Will stop any autonomously running promises.
 		if (isAbandoned) {
-			this.abandoned = true
+			this.abandoned = true;
 		}
 
-		this.abort = true
-		this.emit("taskAborted")
+		this.abort = true;
+		this.emit("taskAborted");
 
 		try {
-			this.dispose() // Call the centralized dispose method
+			this.dispose(); // Call the centralized dispose method
 		} catch (error) {
-			console.error(`Error during task ${this.taskId}.${this.instanceId} disposal:`, error)
+			console.error(`Error during task ${this.taskId}.${this.instanceId} disposal:`, error);
 			// Don't rethrow - we want abort to always succeed
 		}
 		// Save the countdown message in the automatic retry or other content.
 		try {
 			// Save the countdown message in the automatic retry or other content.
-			await this.saveClineMessages()
+			await this.saveClineMessages();
 		} catch (error) {
-			console.error(`Error saving messages during abort for task ${this.taskId}.${this.instanceId}:`, error)
+			console.error(`Error saving messages during abort for task ${this.taskId}.${this.instanceId}:`, error);
 		}
 	}
 
@@ -1131,28 +1161,28 @@ export class Task extends EventEmitter<ClineEvents> {
 		await new Promise<void>((resolve) => {
 			this.pauseInterval = setInterval(() => {
 				if (!this.isPaused) {
-					clearInterval(this.pauseInterval)
-					this.pauseInterval = undefined
-					resolve()
+					clearInterval(this.pauseInterval);
+					this.pauseInterval = undefined;
+					resolve();
 				}
-			}, 1000)
-		})
+			}, 1000);
+		});
 	}
 
 	// Task Loop
 
 	private async initiateTaskLoop(userContent: Anthropic.Messages.ContentBlockParam[]): Promise<void> {
 		// Kicks off the checkpoints initialization process in the background.
-		getCheckpointService(this)
+		getCheckpointService(this);
 
-		let nextUserContent = userContent
-		let includeFileDetails = true
+		let nextUserContent = userContent;
+		let includeFileDetails = true;
 
-		this.emit("taskStarted")
+		this.emit("taskStarted");
 
 		while (!this.abort) {
-			const didEndLoop = await this.recursivelyMakeClineRequests(nextUserContent, includeFileDetails)
-			includeFileDetails = false // we only need file details the first time
+			const didEndLoop = await this.recursivelyMakeClineRequests(nextUserContent, includeFileDetails);
+			includeFileDetails = false; // we only need file details the first time
 
 			// The way this agentic loop works is that cline will be given a
 			// task that he then calls tools to complete. Unless there's an
@@ -1168,10 +1198,10 @@ export class Task extends EventEmitter<ClineEvents> {
 			if (didEndLoop) {
 				// For now a task never 'completes'. This will only happen if
 				// the user hits max requests and denies resetting the count.
-				break
+				break;
 			} else {
-				nextUserContent = [{ type: "text", text: formatResponse.noToolsUsed() }]
-				this.consecutiveMistakeCount++
+				nextUserContent = [{ type: "text", text: formatResponse.noToolsUsed() }];
+				this.consecutiveMistakeCount++;
 			}
 		}
 	}
@@ -1181,14 +1211,14 @@ export class Task extends EventEmitter<ClineEvents> {
 		includeFileDetails: boolean = false,
 	): Promise<boolean> {
 		if (this.abort) {
-			throw new Error(`[KiloCode#recursivelyMakeClineRequests] task ${this.taskId}.${this.instanceId} aborted`)
+			throw new Error(`[KiloCode#recursivelyMakeClineRequests] task ${this.taskId}.${this.instanceId} aborted`);
 		}
 
 		if (this.consecutiveMistakeCount >= this.consecutiveMistakeLimit) {
 			const { response, text, images } = await this.ask(
 				"mistake_limit_reached",
 				t("common:errors.mistake_limit_guidance"),
-			)
+			);
 
 			if (response === "messageResponse") {
 				userContent.push(
@@ -1196,37 +1226,37 @@ export class Task extends EventEmitter<ClineEvents> {
 						{ type: "text" as const, text: formatResponse.tooManyMistakes(text) },
 						...formatResponse.imageBlocks(images),
 					],
-				)
+				);
 
-				await this.say("user_feedback", text, images)
+				await this.say("user_feedback", text, images);
 
 				// Track consecutive mistake errors in telemetry.
-				TelemetryService.instance.captureConsecutiveMistakeError(this.taskId)
+				TelemetryService.instance.captureConsecutiveMistakeError(this.taskId);
 			}
 
-			this.consecutiveMistakeCount = 0
+			this.consecutiveMistakeCount = 0;
 		}
 
 		// In this Cline request loop, we need to check if this task instance
 		// has been asked to wait for a subtask to finish before continuing.
-		const provider = this.providerRef.deref()
+		const provider = this.providerRef.deref();
 
 		if (this.isPaused && provider) {
-			provider.log(`[subtasks] paused ${this.taskId}.${this.instanceId}`)
-			await this.waitForResume()
-			provider.log(`[subtasks] resumed ${this.taskId}.${this.instanceId}`)
-			const currentMode = (await provider.getState())?.mode ?? defaultModeSlug
+			provider.log(`[subtasks] paused ${this.taskId}.${this.instanceId}`);
+			await this.waitForResume();
+			provider.log(`[subtasks] resumed ${this.taskId}.${this.instanceId}`);
+			const currentMode = (await provider.getState())?.mode ?? defaultModeSlug;
 
 			if (currentMode !== this.pausedModeSlug) {
 				// The mode has changed, we need to switch back to the paused mode.
-				await provider.handleModeSwitch(this.pausedModeSlug)
+				await provider.handleModeSwitch(this.pausedModeSlug);
 
 				// Delay to allow mode change to take effect before next tool is executed.
-				await delay(500)
+				await delay(500);
 
 				provider.log(
 					`[subtasks] task ${this.taskId}.${this.instanceId} has switched back to '${this.pausedModeSlug}' from '${currentMode}'`,
-				)
+				);
 			}
 		}
 
@@ -1240,9 +1270,9 @@ export class Task extends EventEmitter<ClineEvents> {
 				request:
 					userContent.map((block) => formatContentBlockToMarkdown(block)).join("\n\n") + "\n\nLoading...",
 			}),
-		)
+		);
 
-		const { showRooIgnoredFiles = true } = (await this.providerRef.deref()?.getState()) ?? {}
+		const { showRooIgnoredFiles = true } = (await this.providerRef.deref()?.getState()) ?? {};
 
 		const [parsedUserContent, needsRulesFileCheck] = await processKiloUserContentMentions({
 			context: this.context, // kilocode_change
@@ -1252,44 +1282,44 @@ export class Task extends EventEmitter<ClineEvents> {
 			fileContextTracker: this.fileContextTracker,
 			rooIgnoreController: this.rooIgnoreController,
 			showRooIgnoredFiles,
-		})
+		});
 
 		if (needsRulesFileCheck) {
 			await this.say(
 				"error",
 				"Issue with processing the /newrule command. Double check that, if '.kilocode/rules' already exists, it's a directory and not a file. Otherwise there was an issue referencing this file/directory",
-			)
+			);
 		}
 		// kilocode_change end
 
-		const environmentDetails = await getEnvironmentDetails(this, includeFileDetails)
+		const environmentDetails = await getEnvironmentDetails(this, includeFileDetails);
 
 		// Add environment details as its own text block, separate from tool
 		// results.
-		const finalUserContent = [...parsedUserContent, { type: "text" as const, text: environmentDetails }]
+		const finalUserContent = [...parsedUserContent, { type: "text" as const, text: environmentDetails }];
 
-		await this.addToApiConversationHistory({ role: "user", content: finalUserContent })
-		TelemetryService.instance.captureConversationMessage(this.taskId, "user")
+		await this.addToApiConversationHistory({ role: "user", content: finalUserContent });
+		TelemetryService.instance.captureConversationMessage(this.taskId, "user");
 
 		// Since we sent off a placeholder api_req_started message to update the
 		// webview while waiting to actually start the API request (to load
 		// potential details for example), we need to update the text of that
 		// message.
-		const lastApiReqIndex = findLastIndex(this.clineMessages, (m) => m.say === "api_req_started")
+		const lastApiReqIndex = findLastIndex(this.clineMessages, (m) => m.say === "api_req_started");
 
 		this.clineMessages[lastApiReqIndex].text = JSON.stringify({
 			request: finalUserContent.map((block) => formatContentBlockToMarkdown(block)).join("\n\n"),
-		} satisfies ClineApiReqInfo)
+		} satisfies ClineApiReqInfo);
 
-		await this.saveClineMessages()
-		await provider?.postStateToWebview()
+		await this.saveClineMessages();
+		await provider?.postStateToWebview();
 
 		try {
-			let cacheWriteTokens = 0
-			let cacheReadTokens = 0
-			let inputTokens = 0
-			let outputTokens = 0
-			let totalCost: number | undefined
+			let cacheWriteTokens = 0;
+			let cacheReadTokens = 0;
+			let inputTokens = 0;
+			let outputTokens = 0;
+			let totalCost: number | undefined;
 
 			// We can't use `api_req_finished` anymore since it's a unique case
 			// where it could come after a streaming message (i.e. in the middle
@@ -1316,22 +1346,22 @@ export class Task extends EventEmitter<ClineEvents> {
 						),
 					cancelReason,
 					streamingFailedMessage,
-				} satisfies ClineApiReqInfo)
-			}
+				} satisfies ClineApiReqInfo);
+			};
 
 			const abortStream = async (cancelReason: ClineApiReqCancelReason, streamingFailedMessage?: string) => {
 				if (this.diffViewProvider.isEditing) {
-					await this.diffViewProvider.revertChanges() // closes diff view
+					await this.diffViewProvider.revertChanges(); // closes diff view
 				}
 
 				// if last message is a partial we need to update and save it
-				const lastMessage = this.clineMessages.at(-1)
+				const lastMessage = this.clineMessages.at(-1);
 
 				if (lastMessage && lastMessage.partial) {
 					// lastMessage.ts = Date.now() DO NOT update ts since it is used as a key for virtuoso list
-					lastMessage.partial = false
+					lastMessage.partial = false;
 					// instead of streaming partialMessage events, we do a save and post like normal to persist to disk
-					console.log("updating partial message", lastMessage)
+					console.log("updating partial message", lastMessage);
 					// await this.saveClineMessages()
 				}
 
@@ -1343,113 +1373,112 @@ export class Task extends EventEmitter<ClineEvents> {
 							type: "text",
 							text:
 								assistantMessage +
-								`\n\n[${
-									cancelReason === "streaming_failed"
-										? "Response interrupted by API Error"
-										: "Response interrupted by user"
+								`\n\n[${cancelReason === "streaming_failed"
+									? "Response interrupted by API Error"
+									: "Response interrupted by user"
 								}]`,
 						},
 					],
-				})
+				});
 
 				// Update `api_req_started` to have cancelled and cost, so that
 				// we can display the cost of the partial stream.
-				updateApiReqMsg(cancelReason, streamingFailedMessage)
-				await this.saveClineMessages()
+				updateApiReqMsg(cancelReason, streamingFailedMessage);
+				await this.saveClineMessages();
 
 				// Signals to provider that it can retrieve the saved messages
 				// from disk, as abortTask can not be awaited on in nature.
-				this.didFinishAbortingStream = true
-			}
+				this.didFinishAbortingStream = true;
+			};
 
 
 			// Reset streaming state.
-			this.currentStreamingContentIndex = 0
-			this.assistantMessageContent = []
-			this.didCompleteReadingStream = false
-			this.userMessageContent = []
-			this.userMessageContentReady = false
-			this.didRejectTool = false
-			this.didAlreadyUseTool = false
-			this.presentAssistantMessageLocked = false
-			this.presentAssistantMessageHasPendingUpdates = false
+			this.currentStreamingContentIndex = 0;
+			this.assistantMessageContent = [];
+			this.didCompleteReadingStream = false;
+			this.userMessageContent = [];
+			this.userMessageContentReady = false;
+			this.didRejectTool = false;
+			this.didAlreadyUseTool = false;
+			this.presentAssistantMessageLocked = false;
+			this.presentAssistantMessageHasPendingUpdates = false;
 
-			await this.diffViewProvider.reset()
+			await this.diffViewProvider.reset();
 
 			// Yields only if the first chunk is successful, otherwise will
 			// allow the user to retry the request (most likely due to rate
 			// limit error, which gets thrown on the first chunk).
-			const stream = this.attemptApiRequest()
-			let assistantMessage = ""
-			let reasoningMessage = ""
-			this.isStreaming = true
+			const stream = this.attemptApiRequest();
+			let assistantMessage = "";
+			let reasoningMessage = "";
+			this.isStreaming = true;
 
 			try {
 				for await (const chunk of stream) {
 					if (!chunk) {
 						// Sometimes chunk is undefined, no idea that can cause
 						// it, but this workaround seems to fix it.
-						continue
+						continue;
 					}
-					
+
 					// LOG LLM RESPONSE
-					fs.appendFileSync(llm_response, JSON.stringify(chunk))
+					logData(llm_messages, "response", JSON.stringify(chunk));
 
 					switch (chunk.type) {
 						case "reasoning":
-							reasoningMessage += chunk.text
-							await this.say("reasoning", reasoningMessage, undefined, true)
-							break
+							reasoningMessage += chunk.text;
+							await this.say("reasoning", reasoningMessage, undefined, true);
+							break;
 						case "usage":
-							inputTokens += chunk.inputTokens
-							outputTokens += chunk.outputTokens
-							cacheWriteTokens += chunk.cacheWriteTokens ?? 0
-							cacheReadTokens += chunk.cacheReadTokens ?? 0
-							totalCost = chunk.totalCost
-							break
+							inputTokens += chunk.inputTokens;
+							outputTokens += chunk.outputTokens;
+							cacheWriteTokens += chunk.cacheWriteTokens ?? 0;
+							cacheReadTokens += chunk.cacheReadTokens ?? 0;
+							totalCost = chunk.totalCost;
+							break;
 						case "text": {
-							assistantMessage += chunk.text
+							assistantMessage += chunk.text;
 
 							// Parse raw assistant message into content blocks.
-							const prevLength = this.assistantMessageContent.length
-							this.assistantMessageContent = parseAssistantMessage(assistantMessage)
+							const prevLength = this.assistantMessageContent.length;
+							this.assistantMessageContent = parseAssistantMessage(assistantMessage);
 
 							if (this.assistantMessageContent.length > prevLength) {
 								// New content we need to present, reset to
 								// false in case previous content set this to true.
-								this.userMessageContentReady = false
+								this.userMessageContentReady = false;
 							}
 
 							// Present content to user.
-							presentAssistantMessage(this)
+							presentAssistantMessage(this);
 
-							break
+							break;
 						}
 					}
 
 					if (this.abort) {
-						console.log(`aborting stream, this.abandoned = ${this.abandoned}`)
+						console.log(`aborting stream, this.abandoned = ${this.abandoned}`);
 
 						if (!this.abandoned) {
 							// Only need to gracefully abort if this instance
 							// isn't abandoned (sometimes OpenRouter stream
 							// hangs, in which case this would affect future
 							// instances of Cline).
-							await abortStream("user_cancelled")
+							await abortStream("user_cancelled");
 						}
 
-						break // Aborts the stream.
+						break; // Aborts the stream.
 					}
 
 					if (this.didRejectTool) {
 						// `userContent` has a tool rejection, so interrupt the
 						// assistant's response to present the user's feedback.
-						assistantMessage += "\n\n[Response interrupted by user feedback]"
+						assistantMessage += "\n\n[Response interrupted by user feedback]";
 						// Instead of setting this preemptively, we allow the
 						// present iterator to finish and set
 						// userMessageContentReady when its ready.
 						// this.userMessageContentReady = true
-						break
+						break;
 					}
 
 					// PREV: We need to let the request finish for openrouter to
@@ -1458,8 +1487,8 @@ export class Task extends EventEmitter<ClineEvents> {
 					// cost of the API cost not being retrieved.
 					if (this.didAlreadyUseTool) {
 						assistantMessage +=
-							"\n\n[Response interrupted by a tool use result. Only one tool may be used at a time and should be placed at the end of the message.]"
-						break
+							"\n\n[Response interrupted by a tool use result. Only one tool may be used at a time and should be placed at the end of the message.]";
+						break;
 					}
 				}
 			} catch (error) {
@@ -1471,31 +1500,31 @@ export class Task extends EventEmitter<ClineEvents> {
 					// could be in (i.e. could have streamed some tools the user
 					// may have executed), so we just resort to replicating a
 					// cancel task.
-					this.abortTask()
+					this.abortTask();
 
 					await abortStream(
 						"streaming_failed",
 						error.message ?? JSON.stringify(serializeError(error), null, 2),
-					)
+					);
 
-					const history = await provider?.getTaskWithId(this.taskId)
+					const history = await provider?.getTaskWithId(this.taskId);
 
 					if (history) {
-						await provider?.initClineWithHistoryItem(history.historyItem)
+						await provider?.initClineWithHistoryItem(history.historyItem);
 					}
 				}
 			} finally {
-				this.isStreaming = false
+				this.isStreaming = false;
 			}
 
 			// Need to call here in case the stream was aborted.
 			if (this.abort || this.abandoned) {
 				throw new Error(
 					`[KiloCode#recursivelyMakeClineRequests] task ${this.taskId}.${this.instanceId} aborted`,
-				)
+				);
 			}
 
-			this.didCompleteReadingStream = true
+			this.didCompleteReadingStream = true;
 
 			// Set any blocks to be complete to allow `presentAssistantMessage`
 			// to finish and set `userMessageContentReady` to true.
@@ -1504,8 +1533,8 @@ export class Task extends EventEmitter<ClineEvents> {
 			// the case, `presentAssistantMessage` relies on these blocks either
 			// to be completed or the user to reject a block in order to proceed
 			// and eventually set userMessageContentReady to true.)
-			const partialBlocks = this.assistantMessageContent.filter((block) => block.partial)
-			partialBlocks.forEach((block) => (block.partial = false))
+			const partialBlocks = this.assistantMessageContent.filter((block) => block.partial);
+			partialBlocks.forEach((block) => (block.partial = false));
 
 			// Can't just do this b/c a tool could be in the middle of executing.
 			// this.assistantMessageContent.forEach((e) => (e.partial = false))
@@ -1516,26 +1545,26 @@ export class Task extends EventEmitter<ClineEvents> {
 				// `pWaitFor` before making the next request. All this is really
 				// doing is presenting the last partial message that we just set
 				// to complete.
-				presentAssistantMessage(this)
+				presentAssistantMessage(this);
 			}
 
-			updateApiReqMsg()
-			await this.saveClineMessages()
-			await this.providerRef.deref()?.postStateToWebview()
+			updateApiReqMsg();
+			await this.saveClineMessages();
+			await this.providerRef.deref()?.postStateToWebview();
 
 			// Now add to apiConversationHistory.
 			// Need to save assistant responses to file before proceeding to
 			// tool use since user can exit at any moment and we wouldn't be
 			// able to save the assistant's response.
-			let didEndLoop = false
+			let didEndLoop = false;
 
 			if (assistantMessage.length > 0) {
 				await this.addToApiConversationHistory({
 					role: "assistant",
 					content: [{ type: "text", text: assistantMessage }],
-				})
+				});
 
-				TelemetryService.instance.captureConversationMessage(this.taskId, "assistant")
+				TelemetryService.instance.captureConversationMessage(this.taskId, "assistant");
 
 				// NOTE: This comment is here for future reference - this was a
 				// workaround for `userMessageContent` not getting set to true.
@@ -1553,19 +1582,19 @@ export class Task extends EventEmitter<ClineEvents> {
 				// 	this.userMessageContentReady = true
 				// }
 
-				await pWaitFor(() => this.userMessageContentReady)
+				await pWaitFor(() => this.userMessageContentReady);
 
 				// If the model did not tool use, then we need to tell it to
 				// either use a tool or attempt_completion.
-				const didToolUse = this.assistantMessageContent.some((block) => block.type === "tool_use")
+				const didToolUse = this.assistantMessageContent.some((block) => block.type === "tool_use");
 
 				if (!didToolUse) {
-					this.userMessageContent.push({ type: "text", text: formatResponse.noToolsUsed() })
-					this.consecutiveMistakeCount++
+					this.userMessageContent.push({ type: "text", text: formatResponse.noToolsUsed() });
+					this.consecutiveMistakeCount++;
 				}
 
-				const recDidEndLoop = await this.recursivelyMakeClineRequests(this.userMessageContent)
-				didEndLoop = recDidEndLoop
+				const recDidEndLoop = await this.recursivelyMakeClineRequests(this.userMessageContent);
+				didEndLoop = recDidEndLoop;
 			} else {
 				// If there's no assistant_responses, that means we got no text
 				// or tool_use content blocks from API which we should assume is
@@ -1573,15 +1602,15 @@ export class Task extends EventEmitter<ClineEvents> {
 				await this.say(
 					"error",
 					"Unexpected API Response: The language model did not provide any assistant messages. This may indicate an issue with the API or the model's output.",
-				)
+				);
 
 				await this.addToApiConversationHistory({
 					role: "assistant",
 					content: [{ type: "text", text: "Failure: I did not provide a response." }],
-				})
+				});
 			}
 
-			return didEndLoop // Will always be false for now.
+			return didEndLoop; // Will always be false for now.
 		} catch (error) {
 			// This should never happen since the only thing that can throw an
 			// error is the attemptApiRequest, which is wrapped in a try catch
@@ -1589,7 +1618,7 @@ export class Task extends EventEmitter<ClineEvents> {
 			// task and destroy this instance. However to avoid unhandled
 			// promise rejection, we will end this loop which will end execution
 			// of this instance (see `startTask`).
-			return true // Needs to be true so parent loop knows to end task.
+			return true; // Needs to be true so parent loop knows to end task.
 		}
 	}
 
@@ -1599,13 +1628,13 @@ export class Task extends EventEmitter<ClineEvents> {
 		includeFileDetails: boolean = false,
 	): Promise<[UserContent, string, boolean]> {
 		// Track if we need to check clinerulesFile
-		let needsClinerulesFileCheck = false
+		let needsClinerulesFileCheck = false;
 
 		// bookmark
 		const { localWorkflowToggles, globalWorkflowToggles } = await refreshWorkflowToggles(
 			this.getContext(),
 			this.cwd,
-		)
+		);
 
 		const processUserContent = async () => {
 			// This is a temporary solution to dynamically load context mentions from tool results. It checks for the presence of tags that indicate that the tool was rejected and feedback was provided (see formatToolDeniedFeedback, attemptCompletion, executeCommand, and consecutiveMistakeCount >= 3) or "<answer>" (see askFollowupQuestion), we place all user generated content in these tags so they can effectively be used as markers for when we should parse mentions). However if we allow multiple tools responses in the future, we will need to parse mentions specifically within the user content tags.
@@ -1626,77 +1655,77 @@ export class Task extends EventEmitter<ClineEvents> {
 								this.cwd,
 								this.urlContentFetcher,
 								this.fileContextTracker,
-							)
+							);
 
 							// when parsing slash commands, we still want to allow the user to provide their desired context
 							const { processedText, needsRulesFileCheck: needsCheck } = await parseKiloSlashCommands(
 								parsedText,
 								localWorkflowToggles,
 								globalWorkflowToggles,
-							)
+							);
 
 							if (needsCheck) {
-								needsClinerulesFileCheck = true
+								needsClinerulesFileCheck = true;
 							}
 
 							return {
 								...block,
 								text: processedText,
-							}
+							};
 						}
 					}
-					return block
+					return block;
 				}),
-			)
-		}
+			);
+		};
 
 		// Run initial promises in parallel
 		const [processedUserContent, environmentDetails] = await Promise.all([
 			processUserContent(),
 			getEnvironmentDetails(this, includeFileDetails),
-		])
+		]);
 		// const [parsedUserContent, environmentDetails, clinerulesError] = await this.loadContext(
 		// 	userContent,
 		// 	includeFileDetails,
 		// )
 
 		// After processing content, check clinerulesData if needed
-		let clinerulesError = false
+		let clinerulesError = false;
 		if (needsClinerulesFileCheck) {
-			clinerulesError = await ensureLocalKilorulesDirExists(this.cwd, GlobalFileNames.kiloRules)
+			clinerulesError = await ensureLocalKilorulesDirExists(this.cwd, GlobalFileNames.kiloRules);
 		}
 
 		// Return all results
-		return [processedUserContent, environmentDetails, clinerulesError]
+		return [processedUserContent, environmentDetails, clinerulesError];
 	}
 	// kilocode_change end
 
 	/*private kilocode_change*/ async getSystemPrompt(): Promise<string> {
-		const { mcpEnabled } = (await this.providerRef.deref()?.getState()) ?? {}
-		let mcpHub: McpHub | undefined
+		const { mcpEnabled } = (await this.providerRef.deref()?.getState()) ?? {};
+		let mcpHub: McpHub | undefined;
 		if (mcpEnabled ?? true) {
-			const provider = this.providerRef.deref()
+			const provider = this.providerRef.deref();
 
 			if (!provider) {
-				throw new Error("Provider reference lost during view transition")
+				throw new Error("Provider reference lost during view transition");
 			}
 
 			// Wait for MCP hub initialization through McpServerManager
-			mcpHub = await McpServerManager.getInstance(provider.context, provider)
+			mcpHub = await McpServerManager.getInstance(provider.context, provider);
 
 			if (!mcpHub) {
-				throw new Error("Failed to get MCP hub from server manager")
+				throw new Error("Failed to get MCP hub from server manager");
 			}
 
 			// Wait for MCP servers to be connected before generating system prompt
 			await pWaitFor(() => !mcpHub!.isConnecting, { timeout: 10_000 }).catch(() => {
-				console.error("MCP servers failed to connect in time")
-			})
+				console.error("MCP servers failed to connect in time");
+			});
 		}
 
-		const rooIgnoreInstructions = this.rooIgnoreController?.getInstructions()
+		const rooIgnoreInstructions = this.rooIgnoreController?.getInstructions();
 
-		const state = await this.providerRef.deref()?.getState()
+		const state = await this.providerRef.deref()?.getState();
 
 		const {
 			browserViewportSize,
@@ -1710,13 +1739,13 @@ export class Task extends EventEmitter<ClineEvents> {
 			language,
 			maxConcurrentFileReads,
 			maxReadFileLine,
-		} = state ?? {}
+		} = state ?? {};
 
 		return await (async () => {
-			const provider = this.providerRef.deref()
+			const provider = this.providerRef.deref();
 
 			if (!provider) {
-				throw new Error("Provider not available")
+				throw new Error("Provider not available");
 			}
 
 			return SYSTEM_PROMPT(
@@ -1739,12 +1768,12 @@ export class Task extends EventEmitter<ClineEvents> {
 				{
 					maxConcurrentFileReads,
 				},
-			)
-		})()
+			);
+		})();
 	}
 
 	public async *attemptApiRequest(retryAttempt: number = 0): ApiStream {
-		const state = await this.providerRef.deref()?.getState()
+		const state = await this.providerRef.deref()?.getState();
 		const {
 			apiConfiguration,
 			autoApprovalEnabled,
@@ -1753,69 +1782,69 @@ export class Task extends EventEmitter<ClineEvents> {
 			mode,
 			autoCondenseContext = true,
 			autoCondenseContextPercent = 100,
-		} = state ?? {}
+		} = state ?? {};
 
 		// Get condensing configuration for automatic triggers
-		const customCondensingPrompt = state?.customCondensingPrompt
-		const condensingApiConfigId = state?.condensingApiConfigId
-		const listApiConfigMeta = state?.listApiConfigMeta
+		const customCondensingPrompt = state?.customCondensingPrompt;
+		const condensingApiConfigId = state?.condensingApiConfigId;
+		const listApiConfigMeta = state?.listApiConfigMeta;
 
 		// Determine API handler to use for condensing
-		let condensingApiHandler: ApiHandler | undefined
+		let condensingApiHandler: ApiHandler | undefined;
 		if (condensingApiConfigId && listApiConfigMeta && Array.isArray(listApiConfigMeta)) {
 			// Using type assertion for the id property to avoid implicit any
-			const matchingConfig = listApiConfigMeta.find((config: any) => config.id === condensingApiConfigId)
+			const matchingConfig = listApiConfigMeta.find((config: any) => config.id === condensingApiConfigId);
 			if (matchingConfig) {
 				const profile = await this.providerRef.deref()?.providerSettingsManager.getProfile({
 					id: condensingApiConfigId,
-				})
+				});
 				// Ensure profile and apiProvider exist before trying to build handler
 				if (profile && profile.apiProvider) {
-					condensingApiHandler = buildApiHandler(profile)
+					condensingApiHandler = buildApiHandler(profile);
 				}
 			}
 		}
 
-		let rateLimitDelay = 0
+		let rateLimitDelay = 0;
 
 		// Use the shared timestamp so that subtasks respect the same rate-limit
 		// window as their parent tasks.
 		if (Task.lastGlobalApiRequestTime) {
-			const now = Date.now()
-			const timeSinceLastRequest = now - Task.lastGlobalApiRequestTime
-			const rateLimit = apiConfiguration?.rateLimitSeconds || 0
-			rateLimitDelay = Math.ceil(Math.max(0, rateLimit * 1000 - timeSinceLastRequest) / 1000)
+			const now = Date.now();
+			const timeSinceLastRequest = now - Task.lastGlobalApiRequestTime;
+			const rateLimit = apiConfiguration?.rateLimitSeconds || 0;
+			rateLimitDelay = Math.ceil(Math.max(0, rateLimit * 1000 - timeSinceLastRequest) / 1000);
 		}
 
 		// Only show rate limiting message if we're not retrying. If retrying, we'll include the delay there.
 		if (rateLimitDelay > 0 && retryAttempt === 0) {
 			// Show countdown timer
 			for (let i = rateLimitDelay; i > 0; i--) {
-				const delayMessage = `Rate limiting for ${i} seconds...`
-				await this.say("api_req_retry_delayed", delayMessage, undefined, true)
-				await delay(1000)
+				const delayMessage = `Rate limiting for ${i} seconds...`;
+				await this.say("api_req_retry_delayed", delayMessage, undefined, true);
+				await delay(1000);
 			}
 		}
 
 		// Update last request time before making the request so that subsequent
 		// requests — even from new subtasks — will honour the provider's rate-limit.
-		Task.lastGlobalApiRequestTime = Date.now()
+		Task.lastGlobalApiRequestTime = Date.now();
 
-		const systemPrompt = await this.getSystemPrompt()
-		const { contextTokens } = this.getTokenUsage()
+		const systemPrompt = await this.getSystemPrompt();
+		const { contextTokens } = this.getTokenUsage();
 
 		if (contextTokens) {
 			// Default max tokens value for thinking models when no specific
 			// value is set.
-			const DEFAULT_THINKING_MODEL_MAX_TOKENS = 16_384
+			const DEFAULT_THINKING_MODEL_MAX_TOKENS = 16_384;
 
-			const modelInfo = this.api.getModel().info
+			const modelInfo = this.api.getModel().info;
 
 			const maxTokens = modelInfo.supportsReasoningBudget
 				? this.apiConfiguration.modelMaxTokens || DEFAULT_THINKING_MODEL_MAX_TOKENS
-				: modelInfo.maxTokens
+				: modelInfo.maxTokens;
 
-			const contextWindow = modelInfo.contextWindow
+			const contextWindow = modelInfo.contextWindow;
 
 			const truncateResult = await truncateConversationIfNeeded({
 				messages: this.apiConversationHistory,
@@ -1829,15 +1858,15 @@ export class Task extends EventEmitter<ClineEvents> {
 				taskId: this.taskId,
 				customCondensingPrompt,
 				condensingApiHandler,
-			})
+			});
 			if (truncateResult.messages !== this.apiConversationHistory) {
-				await this.overwriteApiConversationHistory(truncateResult.messages)
+				await this.overwriteApiConversationHistory(truncateResult.messages);
 			}
 			if (truncateResult.error) {
-				await this.say("condense_context_error", truncateResult.error)
+				await this.say("condense_context_error", truncateResult.error);
 			} else if (truncateResult.summary) {
-				const { summary, cost, prevContextTokens, newContextTokens = 0 } = truncateResult
-				const contextCondense: ContextCondense = { summary, cost, newContextTokens, prevContextTokens }
+				const { summary, cost, prevContextTokens, newContextTokens = 0 } = truncateResult;
+				const contextCondense: ContextCondense = { summary, cost, newContextTokens, prevContextTokens };
 				await this.say(
 					"condense_context",
 					undefined /* text */,
@@ -1847,65 +1876,72 @@ export class Task extends EventEmitter<ClineEvents> {
 					undefined /* progressStatus */,
 					{ isNonInteractive: true } /* options */,
 					contextCondense,
-				)
+				);
 			}
 		}
 
-		const messagesSinceLastSummary = getMessagesSinceLastSummary(this.apiConversationHistory)
+		const messagesSinceLastSummary = getMessagesSinceLastSummary(this.apiConversationHistory);
 		const cleanConversationHistory = maybeRemoveImageBlocks(messagesSinceLastSummary, this.api).map(
 			({ role, content }) => ({ role, content }),
-		)
+		);
 
 		// Check if we've reached the maximum number of auto-approved requests
-		const maxRequests = state?.allowedMaxRequests || Infinity
+		const maxRequests = state?.allowedMaxRequests || Infinity;
 
 		// Increment the counter for each new API request
-		this.consecutiveAutoApprovedRequestsCount++
+		this.consecutiveAutoApprovedRequestsCount++;
 
 		if (this.consecutiveAutoApprovedRequestsCount > maxRequests) {
-			const { response } = await this.ask("auto_approval_max_req_reached", JSON.stringify({ count: maxRequests }))
+			const { response } = await this.ask("auto_approval_max_req_reached", JSON.stringify({ count: maxRequests }));
 			// If we get past the promise, it means the user approved and did not start a new task
 			if (response === "yesButtonClicked") {
-				this.consecutiveAutoApprovedRequestsCount = 0
+				this.consecutiveAutoApprovedRequestsCount = 0;
 			}
 		}
 
 		const metadata: ApiHandlerCreateMessageMetadata = {
 			mode: mode,
 			taskId: this.taskId,
-		}
+		};
 
 
 		// LOG SYSTEM PROMPT
-		fs.writeFileSync(llm_system,systemPrompt)
+		fs.writeFileSync(llm_system, systemPrompt);
 
 
 		// LOG USER PROMPT MESSAGES
 		for (const message of cleanConversationHistory) {
 			if (message.content) {
-				fs.appendFileSync(llm_prompt, JSON.stringify(message.content))
+				try {
+					for (const element of message.content) {
+						const data = logData(llm_messages, "prompt", element);
+						console.log(data);
+					}
+				} catch (error) {
+					console.log(error);
+				}
 			}
 		}
 
 
-		const stream = this.api.createMessage(systemPrompt, cleanConversationHistory, metadata)
-		const iterator = stream[Symbol.asyncIterator]()
+		const stream = this.api.createMessage(systemPrompt, cleanConversationHistory, metadata);
+		const iterator = stream[Symbol.asyncIterator]();
 
 
 		try {
 			// Awaiting first chunk to see if it will throw an error.
-			this.isWaitingForFirstChunk = true
-			const firstChunk = await iterator.next()
+			this.isWaitingForFirstChunk = true;
+			const firstChunk = await iterator.next();
 
-			yield firstChunk.value
-			this.isWaitingForFirstChunk = false
+			yield firstChunk.value;
+			this.isWaitingForFirstChunk = false;
 			// note that this api_req_failed ask is unique in that we only present this option if the api hasn't streamed any content yet (ie it fails on the first chunk due), as it would allow them to hit a retry button. However if the api failed mid-stream, it could be in any arbitrary state where some tools may have executed, so that error is handled differently and requires cancelling the task entirely.
 		} catch (error) {
 			// kilocode_change start
 			// Check for payment required error from KiloCode provider
 			if ((error as any).status === 402 && apiConfiguration?.apiProvider === "kilocode") {
-				const balance = (error as any).balance ?? "0.00"
-				const buyCreditsUrl = (error as any).buyCreditsUrl ?? "https://kilocode.ai/profile"
+				const balance = (error as any).balance ?? "0.00";
+				const buyCreditsUrl = (error as any).buyCreditsUrl ?? "https://kilocode.ai/profile";
 
 				const { response } = await this.ask(
 					"payment_required_prompt",
@@ -1915,46 +1951,46 @@ export class Task extends EventEmitter<ClineEvents> {
 						balance: balance,
 						buyCreditsUrl: buyCreditsUrl,
 					}),
-				)
+				);
 
 				if (response === "retry_clicked") {
-					yield* this.attemptApiRequest(retryAttempt + 1)
+					yield* this.attemptApiRequest(retryAttempt + 1);
 				} else {
 					// Handle other responses or cancellations if necessary
 					// If the user cancels the dialog, we should probably abort.
-					throw error // Rethrow to signal failure upwards
+					throw error; // Rethrow to signal failure upwards
 				}
 				// Removed incorrect closing brace and comments from lines 1274-1276
 			} else if (autoApprovalEnabled && alwaysApproveResubmit) {
 				// kilocode_change end
-				let errorMsg
+				let errorMsg;
 
 				if (error.error?.metadata?.raw) {
-					errorMsg = JSON.stringify(error.error.metadata.raw, null, 2)
+					errorMsg = JSON.stringify(error.error.metadata.raw, null, 2);
 				} else if (error.message) {
-					errorMsg = error.message
+					errorMsg = error.message;
 				} else {
-					errorMsg = "Unknown error"
+					errorMsg = "Unknown error";
 				}
 
-				const baseDelay = requestDelaySeconds || 5
-				let exponentialDelay = Math.ceil(baseDelay * Math.pow(2, retryAttempt))
+				const baseDelay = requestDelaySeconds || 5;
+				let exponentialDelay = Math.ceil(baseDelay * Math.pow(2, retryAttempt));
 
 				// If the error is a 429, and the error details contain a retry delay, use that delay instead of exponential backoff
 				if (error.status === 429) {
 					const geminiRetryDetails = error.errorDetails?.find(
 						(detail: any) => detail["@type"] === "type.googleapis.com/google.rpc.RetryInfo",
-					)
+					);
 					if (geminiRetryDetails) {
-						const match = geminiRetryDetails?.retryDelay?.match(/^(\d+)s$/)
+						const match = geminiRetryDetails?.retryDelay?.match(/^(\d+)s$/);
 						if (match) {
-							exponentialDelay = Number(match[1]) + 1
+							exponentialDelay = Number(match[1]) + 1;
 						}
 					}
 				}
 
 				// Wait for the greater of the exponential delay or the rate limit delay
-				const finalDelay = Math.max(exponentialDelay, rateLimitDelay)
+				const finalDelay = Math.max(exponentialDelay, rateLimitDelay);
 
 				// Show countdown timer with exponential backoff
 				for (let i = finalDelay; i > 0; i--) {
@@ -1963,8 +1999,8 @@ export class Task extends EventEmitter<ClineEvents> {
 						`${errorMsg}\n\nRetry attempt ${retryAttempt + 1}\nRetrying in ${i} seconds...`,
 						undefined,
 						true,
-					)
-					await delay(1000)
+					);
+					await delay(1000);
 				}
 
 				await this.say(
@@ -1972,30 +2008,30 @@ export class Task extends EventEmitter<ClineEvents> {
 					`${errorMsg}\n\nRetry attempt ${retryAttempt + 1}\nRetrying now...`,
 					undefined,
 					false,
-				)
+				);
 
 				// Delegate generator output from the recursive call with
 				// incremented retry count.
-				yield* this.attemptApiRequest(retryAttempt + 1)
+				yield* this.attemptApiRequest(retryAttempt + 1);
 
-				return
+				return;
 			} else {
 				const { response } = await this.ask(
 					"api_req_failed",
 					error.message ?? JSON.stringify(serializeError(error), null, 2),
-				)
+				);
 
 				if (response !== "yesButtonClicked") {
 					// This will never happen since if noButtonClicked, we will
 					// clear current task, aborting this instance.
-					throw new Error("API request failed")
+					throw new Error("API request failed");
 				}
 
-				await this.say("api_req_retried")
+				await this.say("api_req_retried");
 
 				// Delegate generator output from the recursive call.
-				yield* this.attemptApiRequest()
-				return
+				yield* this.attemptApiRequest();
+				return;
 			}
 		}
 
@@ -2009,56 +2045,56 @@ export class Task extends EventEmitter<ClineEvents> {
 		// effectively passes along all subsequent chunks from the original
 		// stream.
 
-		yield* iterator
+		yield* iterator;
 	}
 
 	// Checkpoints
 
 	public async checkpointSave(force: boolean = false) {
-		return checkpointSave(this, force)
+		return checkpointSave(this, force);
 	}
 
 	public async checkpointRestore(options: CheckpointRestoreOptions) {
-		return checkpointRestore(this, options)
+		return checkpointRestore(this, options);
 	}
 
 	public async checkpointDiff(options: CheckpointDiffOptions) {
-		return checkpointDiff(this, options)
+		return checkpointDiff(this, options);
 	}
 
 	// Metrics
 
 	public combineMessages(messages: ClineMessage[]) {
-		return combineApiRequests(combineCommandSequences(messages))
+		return combineApiRequests(combineCommandSequences(messages));
 	}
 
 	public getTokenUsage(): TokenUsage {
-		return getApiMetrics(this.combineMessages(this.clineMessages.slice(1)))
+		return getApiMetrics(this.combineMessages(this.clineMessages.slice(1)));
 	}
 
 	public recordToolUsage(toolName: ToolName) {
 		if (!this.toolUsage[toolName]) {
-			this.toolUsage[toolName] = { attempts: 0, failures: 0 }
+			this.toolUsage[toolName] = { attempts: 0, failures: 0 };
 		}
 
-		this.toolUsage[toolName].attempts++
+		this.toolUsage[toolName].attempts++;
 	}
 
 	public recordToolError(toolName: ToolName, error?: string) {
 		if (!this.toolUsage[toolName]) {
-			this.toolUsage[toolName] = { attempts: 0, failures: 0 }
+			this.toolUsage[toolName] = { attempts: 0, failures: 0 };
 		}
 
-		this.toolUsage[toolName].failures++
+		this.toolUsage[toolName].failures++;
 
 		if (error) {
-			this.emit("taskToolFailed", this.taskId, toolName, error)
+			this.emit("taskToolFailed", this.taskId, toolName, error);
 		}
 	}
 
 	// Getters
 
 	public get cwd() {
-		return this.workspacePath
+		return this.workspacePath;
 	}
 }

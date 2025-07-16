@@ -1,6 +1,6 @@
 #!/bin/sh
 
-rm ll-*.json
-rm ll-*.xml
-rm ll-*.log
-rm ll-*.md
+rm llm-*.json
+rm llm-*.xml
+rm llm-*.log
+rm llm-*.md

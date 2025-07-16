@@ -21,34 +21,34 @@ def transform_json_format(input_file):
         return
 
     parsed_structures = []
-    
+
     # Find JSON structures by parsing character by character, respecting string boundaries
     i = 0
     while i < len(content):
         # Skip whitespace
         while i < len(content) and content[i].isspace():
             i += 1
-        
+
         if i >= len(content):
             break
-            
+
         # Check if we're at the start of a JSON structure
-        if content[i] in '[{':
+        if content[i] in "[{":
             start_char = content[i]
-            end_char = ']' if start_char == '[' else '}'
-            
+            end_char = "]" if start_char == "[" else "}"
+
             # Find the matching closing bracket/brace
             bracket_count = 0
             in_string = False
             escape_next = False
             start_pos = i
-            
+
             while i < len(content):
                 char = content[i]
-                
+
                 if escape_next:
                     escape_next = False
-                elif char == '\\' and in_string:
+                elif char == "\\" and in_string:
                     escape_next = True
                 elif char == '"' and not escape_next:
                     in_string = not in_string
@@ -59,26 +59,28 @@ def transform_json_format(input_file):
                         bracket_count -= 1
                         if bracket_count == 0:
                             # Found complete JSON structure
-                            json_str = content[start_pos:i+1]
+                            json_str = content[start_pos : i + 1]
                             try:
                                 obj = json.loads(json_str)
                                 parsed_structures.append(obj)
                             except json.JSONDecodeError:
-                                print(f"Warning: Could not decode JSON object: {json_str[:100]}...")
+                                print(
+                                    f"Warning: Could not decode JSON object: {json_str[:100]}..."
+                                )
                             break
-                
+
                 i += 1
         else:
             i += 1
 
-    transformed_data = {"prompts": []}
+    transformed_data = {"messages": []}
     for item in parsed_structures:
         if isinstance(item, list):
             # If the item is already a list (e.g., [{"type": "text", ...}]), append it directly
-            transformed_data["prompts"].append(item)
+            transformed_data["messages"].append(item)
         else:
             # If the item is a single object (e.g., {"type": "text", ...}), wrap it in a list
-            transformed_data["prompts"].append([item])
+            transformed_data["messages"].append([item])
 
     print(json.dumps(transformed_data, indent=4))
 
