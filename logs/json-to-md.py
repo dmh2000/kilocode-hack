@@ -5,10 +5,10 @@ import sys
 
 def extract_text_fields(obj, text_parts=None):
     """
-    Recursively extract all 'text' field values from a JSON object or array.
+    extract all 'text' field values from a JSON object or array.
 
     Args:
-        obj: The JSON object/array to search
+        obj: The JSON dictionary to search
         text_parts: List to accumulate text values (used for recursion)
 
     Returns:
@@ -17,35 +17,42 @@ def extract_text_fields(obj, text_parts=None):
     if text_parts is None:
         text_parts = []
 
-    if isinstance(obj, dict):
-        src = ""
-        time = ""
-        type = ""
-        text = ""
+    messages = obj["messages"]
+    for msglist in messages:
+        for msg in msglist:
+            src = ""
+            time = ""
+            type = ""
+            content = ""
 
-        if "source" in obj:
-            src = str(obj["source"])
-        if "timestamp" in obj:
-            time = str(obj["timestamp"])
-        if "type" in obj:
-            type = str(obj["type"])
-        if "text" in obj:
-            text = str(obj["text"])
+            if "source" in msg:
+                src = msg["source"]
+            if "timestamp" in msg:
+                time = msg["timestamp"]
+            if "type" in msg:
+                type = msg["type"]
 
-        text_parts.append(
-            f"\n## ----MESSAGE type={type} src={src} timestamp={time}----\n"
-        )
+            if type == "text":
+                content = msg["text"]
+            elif type == "usage":
+                if "inputTokens" in msg:
+                    content += f"input tokens = {msg["inputTokens"]}\n"
+                if "outputTokens" in msg:
+                    content += f"outputtokens = {msg["outputTokens"]}\n"
+                if "totalCost" in msg:
+                    content += f"total_cost = {msg["totalCost"]}"
+            elif type == "reasoning":
+                content = msg["text"]
+            else:
+                comma = ""
+                for key in msg:
+                    content += f"{comma}{msg[key]}"
+                    comma = ","
 
-        text_parts.append(text)
-
-        # Recursively search all values in the dict
-        for value in obj.values():
-            extract_text_fields(value, text_parts)
-
-    elif isinstance(obj, list):
-        # Recursively search all items in the list
-        for item in obj:
-            extract_text_fields(item, text_parts)
+            text_parts.append(f"### source={src} type={type} timestamp={time}\n")
+            text_parts.append(f"```markdown\n")
+            text_parts.append(content)
+            text_parts.append(f"```\n")
 
     return text_parts
 
