@@ -10,7 +10,7 @@ I cloned and modified KiloCode to do some investigation of the message flow betw
 
 KiloCode is a fork of [Roo Code](https://github.com/RooVetGit/Roo-Code) and [Cline](https://github.com/cline/cline). I used it here because I was using the KiloCode extension in my normal workflow.
 
-I wanted to see an example of exactly what messages are going back and forth between an AI Agent and an LLM it is using. To do this I used KiloClode, because its open source and I could hack in some code to capture the data. I added hacks to the KiloCode source to capture the message data.
+I wanted to see an example of exactly what messages are going back and forth between an AI Agent and an LLM it is using. To do this I used KiloCode, because its open source and I could hack in some code to capture the data. I added hacks to the KiloCode source to capture the message data.
 
 - I wanted to look at:
     - System Prompt from agent to LLM
@@ -146,7 +146,7 @@ The System prompt was roughly organized as follows. You can inspect one of the t
 
 ### Prompts
 
-The prompts the agent sends are massaged by the KiloCode agent. It doesn't just send what is entered by the user. The prompt messages (compiled by the agent) were very similar between the Anthropic and Gemini versions. Again the communication was text and XML snippets.
+The prompts the agent sends are enhanced by the KiloCode agent. It doesn't just send what is entered by the user. The prompt messages (compiled by the agent) were very similar between the Anthropic and Gemini versions. Again the communication was text and XML snippets.
 
 - Anthropic prompt had a section for <thinking> where it gave the LLM a short conversation about how to proceed. Apparently KiloCode didn't think that Gemini needed that.
 
